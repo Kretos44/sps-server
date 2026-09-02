@@ -1,0 +1,567 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Virtual Card - SPS BANK</title>
+    <style>
+      body {
+        background: #000;
+        margin: 0;
+        font-family: Arial;
+        color: #fff;
+      }
+      .phone {
+        max-width: 420px;
+        margin: 0 auto;
+        background: #000;
+        min-height: 100vh;
+        padding-bottom: 30px;
+      }
+      .card-box {
+        background: linear-gradient(135deg, #00e676 0%, #001a0a 100%);
+        border-radius: 24px;
+        padding: 22px;
+        margin: 20px;
+        position: relative;
+        height: 200px;
+        color: #fff;
+        border: 1px solid #00e67644;
+      }
+      .card-num {
+        font-size: 20px;
+        letter-spacing: 3px;
+        margin: 36px 0 10px 0;
+        font-weight: 800;
+      }
+      .btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: 0;
+        font-weight: 800;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      .action {
+        flex: 1;
+        background: #151518;
+        border: 1px solid #222;
+        border-radius: 12px;
+        padding: 14px;
+        text-align: center;
+        cursor: pointer;
+      }
+      .input-dark {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+        margin-top: 10px;
+        box-sizing: border-box;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 99;
+        padding: 20px;
+      }
+      .sheet {
+        background: #121214;
+        border-radius: 24px;
+        width: 100%;
+        max-width: 380px;
+        padding: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <div
+        style="
+          padding: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 36px;
+            height: 36px;
+            background: #151518;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          "
+        >
+          ←
+        </div>
+        <h3>Virtual Card</h3>
+        <div style="width: 36px"></div>
+      </div>
+
+      <div class="card-box" id="cardBox">
+        <div style="display: flex; justify-content: space-between">
+          <p style="font-size: 11px; opacity: 0.7">SPS BANK • VIRTUAL VISA</p>
+          <p
+            id="isFrozen"
+            style="
+              display: none;
+              background: #ff2222;
+              color: #fff;
+              padding: 4px 10px;
+              border-radius: 20px;
+              font-size: 10px;
+            "
+          >
+            FROZEN ❄️
+          </p>
+        </div>
+        <h2 class="card-num" id="cardNumber">•••• •••• •••• ••••</h2>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+          "
+        >
+          <div>
+            <p style="font-size: 9px; opacity: 0.6">CARD HOLDER</p>
+            <p id="cardName" style="font-weight: 700; font-size: 11px">...</p>
+          </div>
+          <div>
+            <p style="font-size: 9px; opacity: 0.6">EXPIRES</p>
+            <p id="cardExp" style="font-weight: 700; font-size: 11px">--/--</p>
+          </div>
+          <div>
+            <p style="font-size: 9px; opacity: 0.6">CVV</p>
+            <p id="cardCvv" style="font-weight: 700; font-size: 11px">•••</p>
+          </div>
+        </div>
+        <p
+          style="
+            position: absolute;
+            bottom: 18px;
+            right: 22px;
+            font-size: 18px;
+            font-weight: 900;
+            font-style: italic;
+          "
+        >
+          VISA
+        </p>
+      </div>
+
+      <div style="padding: 0 20px">
+        <div
+          style="
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+          "
+        >
+          <div>
+            <p style="color: #777; font-size: 11px">WALLET BALANCE</p>
+            <h2 id="bal" style="margin: 4px 0 0 0">₦0</h2>
+          </div>
+          <div style="text-align: right">
+            <p style="color: #777; font-size: 11px">CARD STATUS</p>
+            <p
+              id="cardStatus"
+              style="color: #00e676; font-weight: 800; margin: 4px 0 0 0"
+            >
+              Active
+            </p>
+          </div>
+        </div>
+
+        <button
+          class="btn"
+          id="eyeBtn"
+          onclick="toggleCard()"
+          style="background: #fff; color: #000; margin-top: 16px"
+        >
+          👁️ Show Card Details
+        </button>
+
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+          "
+        >
+          <div class="action" onclick="copyCard()">
+            <p style="font-size: 18px">📋</p>
+            <p style="font-size: 9px; color: #888; margin-top: 4px">Copy</p>
+          </div>
+          <div class="action" onclick="freezeCard()">
+            <p style="font-size: 18px">❄️</p>
+            <p
+              style="font-size: 9px; color: #888; margin-top: 4px"
+              id="freezeText"
+            >
+              Freeze
+            </p>
+          </div>
+          <div class="action" onclick="openPay()">
+            <p style="font-size: 18px">🛒</p>
+            <p style="font-size: 9px; color: #888; margin-top: 4px">
+              Pay Online
+            </p>
+          </div>
+          <div class="action" onclick="location.href = 'wallet.html'">
+            <p style="font-size: 18px">🏠</p>
+            <p style="font-size: 9px; color: #888; margin-top: 4px">Wallet</p>
+          </div>
+        </div>
+
+        <div
+          style="
+            background: #151518;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid #00e67622;
+          "
+        >
+          <h4 style="font-size: 13px">💳 Online Checkout Simulation</h4>
+          <p
+            style="
+              color: #888;
+              font-size: 11px;
+              margin-top: 6px;
+              line-height: 15px;
+            "
+          >
+            This card works for:<br />
+            • Jumia, Amazon, Netflix, Spotify (simulated inside SPS BANK)<br />
+            • Airtime/Data bills will check if card is frozen<br />
+            • Uses your wallet balance - Manager must fund you<br />
+            • 3D Secure OTP: <b>123456</b> for all payments (test)
+          </p>
+        </div>
+
+        <div style="margin-top: 18px">
+          <div style="display: flex; justify-content: space-between">
+            <h4>Card Transactions</h4>
+            <span
+              style="color: #00e676; font-size: 11px"
+              onclick="location.reload()"
+              >Refresh</span
+            >
+          </div>
+          <div id="cardTx" style="margin-top: 10px">
+            <p style="color: #333; font-size: 12px">Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONLINE PAY MODAL -->
+    <div id="payModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: #fff">Pay with Card 🛒</h3>
+        <p style="color: #777; font-size: 11px; margin-top: 4px">
+          Simulate Jumia / Netflix / Amazon payment
+        </p>
+        <input
+          id="merchant"
+          class="input-dark"
+          placeholder="Merchant (e.g Jumia, Netflix)"
+          value="Jumia NG"
+        />
+        <input
+          id="payAmount"
+          class="input-dark"
+          type="number"
+          placeholder="Amount ₦"
+        />
+        <input
+          id="payDesc"
+          class="input-dark"
+          placeholder="Description (e.g Order #123)"
+        />
+        <button
+          class="btn"
+          onclick="initPay()"
+          style="background: #00e676; color: #000; margin-top: 14px"
+        >
+          Pay Now
+        </button>
+        <button
+          class="btn"
+          onclick="closePay()"
+          style="background: transparent; border: 1px solid #333; color: #fff"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- OTP MODAL -->
+    <div id="otpModal" class="modal">
+      <div class="sheet" style="text-align: center">
+        <h3 style="color: #fff">3D Secure OTP</h3>
+        <p style="color: #777; font-size: 11px; margin-top: 6px">
+          Enter OTP sent to your email/phone
+        </p>
+        <div
+          style="
+            background: #0a2e1a;
+            border: 1px solid #00e676;
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 12px;
+          "
+        >
+          <p style="color: #00e676; font-size: 11px">TEST OTP: <b>123456</b></p>
+          <p style="color: #777; font-size: 10px; margin-top: 2px">
+            For simulation, use 123456
+          </p>
+        </div>
+        <input
+          id="otpInput"
+          class="input-dark"
+          placeholder="Enter 6-digit OTP"
+          maxlength="6"
+          style="text-align: center; font-size: 20px; letter-spacing: 6px"
+        />
+        <button
+          class="btn"
+          onclick="confirmPay()"
+          style="background: #00e676; color: #000; margin-top: 14px"
+        >
+          Confirm Payment
+        </button>
+        <p
+          style="color: #777; font-size: 10px; margin-top: 8px"
+          id="payInfo"
+        ></p>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        doc,
+        getDoc,
+        updateDoc,
+        collection,
+        addDoc,
+        query,
+        where,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const uid =
+        localStorage.getItem("uid") || localStorage.getItem("kretos_uid");
+      if (!uid) location.href = "login.html";
+
+      let userData = null,
+        cardData = null,
+        cardVisible = false;
+      let pendingPay = null;
+
+      async function load() {
+        const snap = await getDoc(doc(db, "users", uid));
+        if (!snap.exists()) return (location.href = "login.html");
+        userData = snap.data();
+        document.getElementById("cardName").innerText =
+          userData.fullName.toUpperCase();
+        document.getElementById("bal").innerText =
+          "₦" + (userData.balance || 0).toLocaleString();
+
+        if (!userData.virtualCard) {
+          const num =
+            "5061" +
+            Math.floor(100000000000 + Math.random() * 900000000000).toString();
+          const cvv = Math.floor(100 + Math.random() * 900).toString();
+          const month = String(Math.floor(1 + Math.random() * 12)).padStart(
+            2,
+            "0",
+          );
+          const year = String(new Date().getFullYear() + 3).slice(-2);
+          cardData = {
+            number: num,
+            cvv: cvv,
+            expiry: month + "/" + year,
+            frozen: false,
+            createdAt: new Date(),
+          };
+          await updateDoc(doc(db, "users", uid), { virtualCard: cardData });
+          userData.virtualCard = cardData;
+        } else cardData = userData.virtualCard;
+
+        document.getElementById("cardExp").innerText = cardVisible
+          ? cardData.expiry
+          : "••/••";
+        document.getElementById("cardStatus").innerText = cardData.frozen
+          ? "Frozen ❄️"
+          : "Active ✅";
+        document.getElementById("cardStatus").style.color = cardData.frozen
+          ? "#ff5555"
+          : "#00e676";
+        document.getElementById("isFrozen").style.display = cardData.frozen
+          ? "block"
+          : "none";
+        document.getElementById("freezeText").innerText = cardData.frozen
+          ? "Unfreeze"
+          : "Freeze";
+        loadCardTx();
+      }
+
+      window.toggleCard = () => {
+        cardVisible = !cardVisible;
+        if (cardVisible) {
+          document.getElementById("cardNumber").innerText = cardData.number
+            .replace(/(.{4})/g, "$1 ")
+            .trim();
+          document.getElementById("cardCvv").innerText = cardData.cvv;
+          document.getElementById("cardExp").innerText = cardData.expiry;
+          document.getElementById("eyeBtn").innerText = "🙈 Hide Card Details";
+        } else {
+          document.getElementById("cardNumber").innerText =
+            "•••• •••• •••• ••••";
+          document.getElementById("cardCvv").innerText = "•••";
+          document.getElementById("cardExp").innerText = "••/••";
+          document.getElementById("eyeBtn").innerText = "👁️ Show Card Details";
+        }
+      };
+
+      window.copyCard = () => {
+        if (!cardVisible) return alert("Show card details first 👁️");
+        const text = `SPS BANK Virtual Card\nNumber: ${cardData.number}\nExpiry: ${cardData.expiry}\nCVV: ${cardData.cvv}\nHolder: ${userData.fullName}`;
+        navigator.clipboard.writeText(text);
+        alert("Card copied ✅");
+      };
+
+      window.freezeCard = async () => {
+        const newStatus = !cardData.frozen;
+        if (
+          !confirm(
+            newStatus
+              ? "Freeze card? No online payment will work ❄️"
+              : "Unfreeze card? ✅",
+          )
+        )
+          return;
+        cardData.frozen = newStatus;
+        await updateDoc(doc(db, "users", uid), { virtualCard: cardData });
+        alert(
+          newStatus
+            ? "Card Frozen ❄️ - All payments blocked"
+            : "Card Active ✅",
+        );
+        location.reload();
+      };
+
+      window.openPay = () => {
+        if (cardData.frozen) return alert("Card is Frozen ❄️ Unfreeze first");
+        document.getElementById("payModal").style.display = "flex";
+      };
+      window.closePay = () =>
+        (document.getElementById("payModal").style.display = "none");
+
+      window.initPay = () => {
+        const merchant = document.getElementById("merchant").value.trim();
+        const amount = Number(document.getElementById("payAmount").value);
+        const desc =
+          document.getElementById("payDesc").value.trim() || "Online Purchase";
+        if (!merchant || !amount) return alert("Enter merchant & amount");
+        if (amount > userData.balance)
+          return alert(
+            "Insufficient balance ₦" +
+              userData.balance +
+              " - Ask manager to fund you: " +
+              userData.accountNumber,
+          );
+        pendingPay = { merchant, amount, desc };
+        document.getElementById("payModal").style.display = "none";
+        document.getElementById("payInfo").innerText =
+          `Paying ₦${amount} to ${merchant}`;
+        document.getElementById("otpModal").style.display = "flex";
+      };
+
+      window.confirmPay = async () => {
+        const otp = document.getElementById("otpInput").value.trim();
+        if (otp !== "123456") return alert("Invalid OTP. Test OTP is 123456");
+        if (!pendingPay) return;
+
+        // Deduct
+        await updateDoc(doc(db, "users", uid), {
+          balance: userData.balance - pendingPay.amount,
+        });
+        const txnId = Math.floor(
+          1000000000000 + Math.random() * 9000000000000,
+        ).toString();
+        await addDoc(collection(db, "transactions"), {
+          fromUid: uid,
+          toUid: uid,
+          fromName: userData.fullName,
+          toName: pendingPay.merchant,
+          fromEmail: userData.email,
+          toEmail: "",
+          fromAccount: userData.accountNumber,
+          toAccount: cardData.number.slice(-4),
+          amount: pendingPay.amount,
+          type: "card_payment",
+          remark: pendingPay.desc + " - Card: " + cardData.number.slice(-4),
+          txnId,
+          participants: [uid],
+          createdAt: new Date(),
+          cardPayment: true,
+          merchant: pendingPay.merchant,
+        });
+
+        document.getElementById("otpModal").style.display = "none";
+        alert(
+          `✅ Payment Successful!\n\n₦${pendingPay.amount} paid to ${pendingPay.merchant}\nTxn: ${txnId}\n\nRemaining Balance: ₦${userData.balance - pendingPay.amount}`,
+        );
+        location.reload();
+      };
+
+      async function loadCardTx() {
+        const q = query(
+          collection(db, "transactions"),
+          where("participants", "array-contains", uid),
+        );
+        const snap = await getDocs(q);
+        let html = "";
+        let arr = [];
+        snap.forEach((d) => arr.push(d.data()));
+        arr.sort(
+          (a, b) =>
+            (b.createdAt?.toDate
+              ? b.createdAt.toDate()
+              : new Date(b.createdAt)) -
+            (a.createdAt?.toDate
+              ? a.createdAt.toDate()
+              : new Date(a.createdAt)),
+        );
+        arr.forEach((t) => {
+          if (t.cardPayment || t.type === "bill" || t.type === "card_payment") {
+            html += `<div style="background:#151518;border-radius:12px;padding:12px;margin-top:8px;display:flex;justify-content:space-between"><div><p style="font-size:13px">${t.merchant || t.toName}</p><p style="font-size:10px;color:#666">${new Date(t.createdAt?.toDate ? t.createdAt.toDate() : t.createdAt).toLocaleString()} • ${t.toAccount || "Card"}</p></div><p style="color:#ff5555;font-weight:700">-₦${t.amount}</p></div>`;
+          }
+        });
+        document.getElementById("cardTx").innerHTML =
+          html ||
+          '<p style="color:#333;font-size:12px">No card payments yet. Click Pay Online to test.</p>';
+      }
+
+      load();
+    </script>
+  </body>
+</html>

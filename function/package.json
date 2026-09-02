@@ -1,0 +1,10 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for SPS BANK",
+  "engines": { "node": "18" },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "firebase-functions": "^4.5.0"
+  }
+}

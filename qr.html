@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>QR Pay - KRETOS</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  </head>
+  <body>
+    <div class="phone" style="padding: 20px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 36px;
+            height: 36px;
+            background: #151518;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+          "
+        >
+          ←
+        </div>
+        <h3 style="color: #fff">QR Pay</h3>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px">
+        <button
+          id="tabReceive"
+          onclick="showTab('receive')"
+          style="
+            flex: 1;
+            background: #00e676;
+            color: #000;
+            padding: 12px;
+            border-radius: 12px;
+            border: 0;
+            font-weight: 700;
+          "
+        >
+          My QR
+        </button>
+        <button
+          id="tabScan"
+          onclick="showTab('scan')"
+          style="
+            flex: 1;
+            background: #151518;
+            color: #fff;
+            padding: 12px;
+            border-radius: 12px;
+            border: 0;
+          "
+        >
+          Scan QR
+        </button>
+      </div>
+      <div
+        id="receiveBox"
+        style="
+          background: #fff;
+          border-radius: 20px;
+          padding: 20px;
+          margin-top: 20px;
+          text-align: center;
+        "
+      >
+        <div id="qrcode" style="display: flex; justify-content: center"></div>
+        <p id="qrAcct" style="color: #000; font-weight: 800; margin-top: 12px">
+          ...
+        </p>
+        <p id="qrName" style="color: #666; font-size: 12px"></p>
+        <p style="color: #888; font-size: 10px; margin-top: 8px">
+          Show this QR to receive payment instantly
+        </p>
+        <button
+          onclick="shareQR()"
+          style="
+            width: 100%;
+            margin-top: 12px;
+            background: #000;
+            color: #fff;
+            padding: 12px;
+            border-radius: 12px;
+            border: 0;
+          "
+        >
+          Share QR
+        </button>
+      </div>
+      <div id="scanBox" style="display: none; margin-top: 20px">
+        <div
+          id="reader"
+          style="width: 100%; border-radius: 16px; overflow: hidden"
+        ></div>
+        <div
+          id="scanResult"
+          style="
+            display: none;
+            background: #151518;
+            padding: 16px;
+            border-radius: 16px;
+            margin-top: 12px;
+          "
+        >
+          <p style="color: #00e676; font-size: 12px">Scanned Account</p>
+          <p
+            id="scannedAcct"
+            style="color: #fff; font-weight: 700; margin-top: 4px"
+          ></p>
+          <input
+            id="scanAmount"
+            class="input-dark"
+            placeholder="Amount"
+            type="number"
+            style="margin-top: 12px"
+          />
+          <button
+            onclick="payScanned()"
+            class="btn-green"
+            style="
+              width: 100%;
+              margin-top: 10px;
+              padding: 14px;
+              border-radius: 14px;
+              border: 0;
+              background: #00e676;
+              font-weight: 700;
+            "
+          >
+            Pay Now
+          </button>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const uid = localStorage.getItem("uid");
+      const snap = await getDoc(doc(db, "users", uid));
+      const u = snap.data();
+      document.getElementById("qrAcct").innerText = u.accountNumber;
+      document.getElementById("qrName").innerText = u.fullName;
+      new QRCode(document.getElementById("qrcode"), {
+        text: u.accountNumber,
+        width: 200,
+        height: 200,
+      });
+      let html5Qr = null;
+      window.showTab = (t) => {
+        document.getElementById("receiveBox").style.display =
+          t === "receive" ? "block" : "none";
+        document.getElementById("scanBox").style.display =
+          t === "scan" ? "block" : "none";
+        document.getElementById("tabReceive").style.background =
+          t === "receive" ? "#00e676" : "#151518";
+        document.getElementById("tabReceive").style.color =
+          t === "receive" ? "#000" : "#fff";
+        document.getElementById("tabScan").style.background =
+          t === "scan" ? "#00e676" : "#151518";
+        document.getElementById("tabScan").style.color =
+          t === "scan" ? "#000" : "#fff";
+        if (t === "scan" && !html5Qr) {
+          html5Qr = new Html5Qrcode("reader");
+          html5Qr.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            (decoded) => {
+              document.getElementById("scannedAcct").innerText = decoded;
+              document.getElementById("scanResult").style.display = "block";
+              html5Qr.stop();
+            },
+          );
+        }
+      };
+      window.payScanned = () => {
+        const acct = document.getElementById("scannedAcct").innerText;
+        const amt = document.getElementById("scanAmount").value;
+        localStorage.setItem("qr_pay_acct", acct);
+        localStorage.setItem("qr_pay_amt", amt);
+        location.href = "wallet.html?qrpay=1";
+      };
+      window.shareQR = async () => {
+        const text = `Pay me on KRETOS - Account: ${u.accountNumber} - ${u.fullName}`;
+        if (navigator.share) {
+          await navigator.share({ title: "KRETOS QR", text });
+        } else {
+          navigator.clipboard.writeText(text);
+          alert("Copied!");
+        }
+      };
+    </script>
+  </body>
+</html>

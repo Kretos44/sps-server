@@ -1,0 +1,2358 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SPS BANK</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --card: #151518;
+        --text: #fff;
+        --green: #00e676;
+        --muted: #888;
+        --border: #222;
+      }
+      body[data-theme="blue"] {
+        --bg: #0a0f1a;
+        --card: #141e2e;
+        --text: #e0f0ff;
+        --green: #3b82f6;
+        --muted: #7aa0c8;
+        --border: #1e2f4a;
+      }
+      body[data-theme="purple"] {
+        --bg: #120a1a;
+        --card: #1e1430;
+        --text: #f0e0ff;
+        --green: #a855f7;
+        --muted: #9a7ab8;
+        --border: #2a2040;
+      }
+      body[data-theme="orange"] {
+        --bg: #1a100a;
+        --card: #2a1e14;
+        --text: #ffe0b0;
+        --green: #ff8c00;
+        --muted: #a08050;
+        --border: #3a2a1a;
+      }
+      body[data-theme="light"] {
+        --bg: #f5f5f7;
+        --card: #ffffff;
+        --text: #000;
+        --green: #00b86a;
+        --muted: #888;
+        --border: #e0e0e0;
+      }
+      body[data-theme="dark"],
+      body[data-theme="green"] {
+        --bg: #0a0a0a;
+        --card: #151518;
+        --text: #fff;
+        --green: #00e676;
+        --muted: #888;
+        --border: #222;
+      }
+      body {
+        background: var(--bg);
+        margin: 0;
+        font-family: Arial;
+        color: var(--text);
+        transition: 0.3s;
+      }
+      .phone {
+        max-width: 420px;
+        margin: 0 auto;
+        background: var(--bg);
+        min-height: 100vh;
+        transition: 0.3s;
+      }
+      .card-grad {
+        background: linear-gradient(135deg, var(--green) 0%, #00b86a 100%);
+        border-radius: 28px;
+        padding: 22px;
+        color: #000;
+      }
+      .action {
+        width: 56px;
+        height: 56px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        cursor: pointer;
+        color: var(--text);
+      }
+      .service {
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+      .tx {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        display: none;
+        align-items: end;
+        justify-content: center;
+        z-index: 99;
+      }
+      .sheet {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 28px 28px 0 0;
+        width: 100%;
+        max-width: 420px;
+        padding: 24px;
+        max-height: 92vh;
+        overflow: auto;
+      }
+      .badge {
+        background: var(--green);
+        color: #000;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .cancel-bright {
+        background: var(--bg) !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+      }
+      .success-pop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+      }
+      .success-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 30px;
+        width: 90%;
+        max-width: 360px;
+        text-align: center;
+      }
+      .receipt-box {
+        background: #fff;
+        color: #000;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: left;
+        margin: 10px 0;
+      }
+      .profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--green);
+        background: var(--card);
+        cursor: pointer;
+      }
+      .input-dark {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        margin-top: 12px;
+        box-sizing: border-box;
+      }
+      .btn-green {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: var(--green);
+        border: 0;
+        font-weight: 800;
+        color: #000;
+        cursor: pointer;
+      }
+      .btn-primary {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: 0;
+        font-weight: 700;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      document.body.setAttribute(
+        "data-theme",
+        localStorage.getItem("kretos_theme") || "dark",
+      );
+    </script>
+    <div class="phone">
+      <div
+        style="
+          padding: 20px 20px 0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div
+            onclick="location.href = 'login.html'"
+            style="
+              width: 36px;
+              height: 36px;
+              background: var(--card);
+              border: 1px solid var(--border);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              color: var(--text);
+            "
+          >
+            ←
+          </div>
+          <img
+            id="topPic"
+            class="profile-pic"
+            src="https://via.placeholder.com/40/222/666?text=S"
+          /><input type="file" id="picInput" hidden accept="image/*" />
+          <div>
+            <p
+              style="color: var(--text); font-size: 14px; font-weight: 700"
+              id="topUserName"
+            >
+              Hi
+            </p>
+            <p style="color: var(--muted); font-size: 10px" id="topUserPhone">
+              ...
+            </p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <div
+            onclick="location.href = 'settings.html'"
+            style="
+              width: 36px;
+              height: 36px;
+              background: var(--card);
+              border: 1px solid var(--border);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              color: var(--text);
+            "
+          >
+            ⚙️
+          </div>
+          <div
+            id="managerBtn"
+            onclick="openManager()"
+            style="
+              display: none;
+              background: var(--green);
+              color: #000;
+              padding: 8px 14px;
+              border-radius: 20px;
+              font-size: 11px;
+              font-weight: 800;
+              cursor: pointer;
+            "
+          >
+            MANAGER 👑
+          </div>
+        </div>
+      </div>
+      <div style="padding: 20px">
+        <div class="card-grad">
+          <p style="font-size: 11px; opacity: 0.7">
+            TOTAL BALANCE • <span id="acctShow" style="font-weight: 700"></span
+            ><span
+              id="eyeBal"
+              onclick="toggleBal()"
+              style="
+                margin-left: 8px;
+                cursor: pointer;
+                background: rgba(0, 0, 0, 0.15);
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 700;
+              "
+              >👁️ Hide</span
+            >
+          </p>
+          <h1 style="font-size: 36px; margin: 8px 0">
+            ₦<span id="bal">0</span
+            ><span id="balHidden" style="display: none">****</span>
+          </h1>
+          <p style="font-size: 12px; font-weight: 700" id="userFullName">...</p>
+          <p style="font-size: 11px; opacity: 0.7" id="userEmail"></p>
+          <p style="font-size: 10px; margin-top: 6px; opacity: 0.7">
+            Referral: <b id="refCodeShow">---</b> • Earn ₦500
+          </p>
+          <p id="isManagerTag" style="display: none; margin-top: 8px">
+            <span class="badge">MANAGER - Zaharadeen Tijjani</span>
+          </p>
+        </div>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+            text-align: center;
+          "
+        >
+          <div>
+            <div class="action" onclick="openSend()">↗</div>
+            <p style="font-size: 10px; margin-top: 6px; color: var(--muted)">
+              Send
+            </p>
+          </div>
+          <div>
+            <div class="action" onclick="openAddCard()">💳</div>
+            <p style="font-size: 10px; margin-top: 6px; color: var(--muted)">
+              Add Card
+            </p>
+          </div>
+          <div>
+            <div class="action" onclick="location.href = 'history.html'">
+              ☰
+            </div>
+            <p style="font-size: 10px; margin-top: 6px; color: var(--muted)">
+              History
+            </p>
+          </div>
+          <div>
+            <div class="action" onclick="location.href = 'face.html'">◉</div>
+            <p style="font-size: 10px; margin-top: 6px; color: var(--muted)">
+              Face ID
+            </p>
+          </div>
+        </div>
+        <h3 style="font-size: 14px; color: var(--text); margin-top: 22px">
+          Buy & Pay Bills
+        </h3>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+          "
+        >
+          <div class="service" onclick="openBill('Airtime')">
+            <span style="font-size: 22px">📱</span
+            ><span style="font-size: 10px; color: var(--muted)">Airtime</span>
+          </div>
+          <div class="service" onclick="openBill('Data')">
+            <span style="font-size: 22px">🌐</span
+            ><span style="font-size: 10px; color: var(--muted)">Data</span>
+          </div>
+          <div class="service" onclick="openBill('Electricity')">
+            <span style="font-size: 22px">💡</span
+            ><span style="font-size: 10px; color: var(--muted)"
+              >Electricity</span
+            >
+          </div>
+          <div class="service" onclick="openBill('Cable TV')">
+            <span style="font-size: 22px">📺</span
+            ><span style="font-size: 10px; color: var(--muted)">Cable TV</span>
+          </div>
+          <div class="service" onclick="openBill('Betting')">
+            <span style="font-size: 22px">⚽</span
+            ><span style="font-size: 10px; color: var(--muted)">Betting</span>
+          </div>
+          <div class="service" onclick="openBill('Education')">
+            <span style="font-size: 22px">🎓</span
+            ><span style="font-size: 10px; color: var(--muted)">Education</span>
+          </div>
+          <div class="service" onclick="openBill('Internet')">
+            <span style="font-size: 22px">📶</span
+            ><span style="font-size: 10px; color: var(--muted)">Internet</span>
+          </div>
+          <div class="service" onclick="openBill('Gift Card')">
+            <span style="font-size: 22px">🎁</span
+            ><span style="font-size: 10px; color: var(--muted)">Gift Card</span>
+          </div>
+        </div>
+        <h3 style="font-size: 14px; color: var(--text); margin-top: 20px">
+          More Features
+        </h3>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+          "
+        >
+          <div class="service" onclick="openAnalytics()">
+            <span style="font-size: 20px">📊</span
+            ><span style="font-size: 10px; color: var(--muted)">Analytics</span>
+          </div>
+          <div class="service" onclick="openReferral()">
+            <span style="font-size: 20px">👥</span
+            ><span style="font-size: 10px; color: var(--muted)">Referral</span>
+          </div>
+          <div class="service" onclick="location.href = 'virtualcard.html'">
+            <span style="font-size: 20px">💳</span
+            ><span style="font-size: 10px; color: var(--muted)"
+              >Virtual Card</span
+            >
+          </div>
+          <div class="service" onclick="location.href = 'loan.html'">
+            <span style="font-size: 20px">💰</span
+            ><span style="font-size: 10px; color: var(--muted)">Loan</span>
+          </div>
+          <div class="service" onclick="openUserChat()">
+            <span style="font-size: 20px">💬</span
+            ><span style="font-size: 10px; color: var(--muted)">Support</span>
+          </div>
+          <div class="service" onclick="openChangePin()">
+            <span style="font-size: 20px">🔐</span
+            ><span style="font-size: 10px; color: var(--muted)"
+              >Change PIN</span
+            >
+          </div>
+        </div>
+        <div
+          style="
+            margin-top: 26px;
+            display: flex;
+            justify-content: space-between;
+          "
+        >
+          <h3 style="font-size: 16px; color: var(--text)">
+            Recent Transactions
+          </h3>
+          <span
+            style="color: var(--green); font-size: 12px; cursor: pointer"
+            onclick="location.href = 'history.html'"
+            >View all</span
+          >
+        </div>
+        <div id="txList" style="margin-top: 12px"></div>
+      </div>
+    </div>
+    <div id="successPop" class="success-pop" style="overflow-y: auto">
+      <div class="success-card">
+        <div
+          style="
+            width: 80px;
+            height: 80px;
+            background: var(--green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto;
+          "
+        >
+          ✅
+        </div>
+        <h2 style="margin-top: 16px; color: var(--text)">Success!</h2>
+        <p
+          id="successText"
+          style="color: var(--muted); font-size: 13px; margin-top: 6px"
+        >
+          Successful
+        </p>
+        <div
+          id="receiptPreview"
+          class="receipt-box"
+          style="display: none"
+        ></div>
+        <button
+          class="btn-green"
+          onclick="shareWhatsApp()"
+          style="margin-top: 12px; background: #25d366"
+        >
+          📱 WhatsApp
+        </button>
+        <button
+          class="btn-green"
+          onclick="shareAnywhere()"
+          style="margin-top: 8px; background: #000; color: #fff"
+        >
+          🔗 Share
+        </button>
+        <div style="display: flex; gap: 8px; margin-top: 8px">
+          <button
+            class="btn-primary"
+            onclick="downloadPDF()"
+            style="
+              flex: 1;
+              background: var(--bg);
+              border: 1px solid var(--border);
+              color: var(--text);
+            "
+          >
+            PDF
+          </button>
+          <button
+            class="btn-primary"
+            onclick="downloadImage()"
+            style="
+              flex: 1;
+              background: var(--bg);
+              border: 1px solid var(--border);
+              color: var(--text);
+            "
+          >
+            Image
+          </button>
+        </div>
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            position: sticky;
+            bottom: 0;
+            background: var(--card);
+            padding-top: 10px;
+          "
+        >
+          <button
+            onclick="closeSuccessPop()"
+            style="
+              flex: 1;
+              padding: 14px;
+              background: #f0f0f0;
+              border: none;
+              border-radius: 10px;
+              font-weight: 700;
+            "
+          >
+            ⬅ Back to Wallet
+          </button>
+          <button
+            onclick="closeSuccessPop()"
+            style="
+              flex: 1;
+              padding: 14px;
+              background: #00a651;
+              color: #fff;
+              border: none;
+              border-radius: 10px;
+              font-weight: 700;
+            "
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="sendModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: var(--text)">Send Money</h3>
+        <label
+          style="
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 14px;
+            display: block;
+          "
+          >Select Bank</label
+        ><select
+          id="bankSelect"
+          class="input-dark"
+          onchange="onBankChange()"
+          style="margin-top: 6px"
+        >
+          <option value="SPS BANK">SPS BANK - Internal</option>
+          <option value="Access Bank">Access Bank</option>
+          <option value="GTBank">GTBank</option>
+          <option value="First Bank">First Bank</option>
+          <option value="UBA">UBA</option>
+          <option value="Zenith Bank">Zenith Bank</option>
+          <option value="OPay">OPay</option>
+          <option value="PalmPay">PalmPay</option>
+          <option value="Kuda Bank">Kuda Bank</option>
+          <option value="Moniepoint">Moniepoint</option>
+          <option value="Fidelity Bank">Fidelity Bank</option>
+          <option value="Other Bank">Other Bank</option></select
+        ><input
+          id="sendAccount"
+          class="input-dark"
+          placeholder="Account Number"
+          type="text"
+          inputmode="numeric"
+          maxlength="10"
+          style="margin-top: 12px"
+        />
+        <div
+          id="acctSuggestion"
+          style="
+            display: none;
+            margin-top: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-height: 160px;
+            overflow: auto;
+          "
+        ></div>
+        <input
+          id="sendAmount"
+          class="input-dark"
+          placeholder="Amount ₦"
+          type="number"
+        /><input id="sendRemark" class="input-dark" placeholder="Remark" />
+        <div
+          id="recipientName"
+          style="
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--green);
+            background: var(--bg);
+          "
+        >
+          <p
+            style="color: var(--muted); font-size: 10px; margin: 0"
+            id="recipientType"
+          ></p>
+          <p
+            style="
+              color: var(--text);
+              font-weight: 800;
+              font-size: 14px;
+              margin: 4px 0 0 0;
+            "
+            id="recipientNameText"
+          ></p>
+          <p
+            style="color: var(--green); font-size: 11px; margin: 2px 0 0 0"
+            id="recipientAcctText"
+          ></p>
+          <p
+            style="color: var(--muted); font-size: 10px; margin: 2px 0 0 0"
+            id="recipientBankText"
+          ></p>
+        </div>
+        <button
+          class="btn-primary"
+          onclick="checkAccount()"
+          id="verifyBtn"
+          style="
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            margin-top: 12px;
+          "
+        >
+          Verify Account</button
+        ><button
+          class="btn-green"
+          onclick="openPinModal()"
+          id="sendBtn"
+          style="margin-top: 8px; opacity: 0.5"
+          disabled
+        >
+          Proceed to Enter PIN →</button
+        ><button
+          class="btn-primary cancel-bright"
+          onclick="closeMods()"
+          style="margin-top: 8px"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <div id="pinModal" class="modal" style="z-index: 100">
+      <div
+        class="sheet"
+        style="max-width: 360px; border-radius: 28px; margin-bottom: 20px"
+      >
+        <h3 style="color: var(--text); text-align: center">Enter PIN 🔐</h3>
+        <div
+          style="
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 14px;
+            text-align: center;
+            border: 1px solid var(--border);
+          "
+        >
+          <p
+            style="color: var(--muted); font-size: 10px"
+            id="pinConfirmText"
+          ></p>
+          <p
+            style="
+              color: var(--text);
+              font-size: 16px;
+              font-weight: 800;
+              margin-top: 4px;
+            "
+            id="pinConfirmAmount"
+          ></p>
+        </div>
+        <div style="position: relative; margin-top: 14px">
+          <input
+            id="sendPin"
+            class="input-dark"
+            placeholder="Enter 6-digit PIN"
+            type="password"
+            maxlength="6"
+            style="
+              text-align: center;
+              font-size: 22px;
+              letter-spacing: 8px;
+              margin-top: 0;
+            "
+          /><span
+            onclick="togglePin('sendPin', this)"
+            style="
+              position: absolute;
+              right: 14px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+              color: var(--muted);
+            "
+            >👁️</span
+          >
+        </div>
+        <p
+          id="pinError"
+          style="
+            color: #ff5555;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+          "
+        ></p>
+        <button
+          class="btn-green"
+          onclick="doSend()"
+          id="finalSendBtn"
+          style="margin-top: 14px"
+        >
+          Confirm Send</button
+        ><button
+          class="btn-primary cancel-bright"
+          onclick="closePinModal()"
+          style="margin-top: 8px"
+        >
+          Back
+        </button>
+      </div>
+    </div>
+    <div id="changePinModal" class="modal" style="z-index: 101">
+      <div
+        class="sheet"
+        style="max-width: 360px; border-radius: 28px; margin-bottom: 20px"
+      >
+        <h3 style="color: var(--text); text-align: center">Change PIN 🔐</h3>
+        <div style="position: relative; margin-top: 14px">
+          <input
+            id="oldPin"
+            class="input-dark"
+            type="password"
+            maxlength="6"
+            placeholder="Current PIN"
+            style="margin-top: 0; text-align: center; letter-spacing: 6px"
+          /><span
+            onclick="togglePin('oldPin', this)"
+            style="
+              position: absolute;
+              right: 14px;
+              top: 58%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+            >👁️</span
+          >
+        </div>
+        <div style="position: relative">
+          <input
+            id="newPin"
+            class="input-dark"
+            type="password"
+            maxlength="6"
+            placeholder="New 6-digit PIN"
+            style="text-align: center; letter-spacing: 6px"
+          /><span
+            onclick="togglePin('newPin', this)"
+            style="
+              position: absolute;
+              right: 14px;
+              top: 58%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+            >👁️</span
+          >
+        </div>
+        <input
+          id="confirmNewPin"
+          class="input-dark"
+          type="password"
+          maxlength="6"
+          placeholder="Confirm New PIN"
+          style="text-align: center; letter-spacing: 6px"
+        />
+        <p
+          id="changePinError"
+          style="
+            color: #ff5555;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+          "
+        ></p>
+        <button
+          class="btn-green"
+          onclick="doChangePin()"
+          style="margin-top: 14px"
+        >
+          Update PIN</button
+        ><button
+          class="btn-primary cancel-bright"
+          onclick="closeChangePinModal()"
+          style="margin-top: 8px"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <div id="addCardModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: var(--text)">Add Card</h3>
+        <input
+          id="cardNumber"
+          class="input-dark"
+          placeholder="Card Number 16 digits"
+          maxlength="19"
+          style="margin-top: 14px"
+        />
+        <div style="display: flex; gap: 10px">
+          <input
+            id="expiry"
+            class="input-dark"
+            placeholder="MM/YY"
+            style="flex: 1"
+          /><input
+            id="cvv"
+            class="input-dark"
+            placeholder="CVV"
+            maxlength="3"
+            style="flex: 1"
+          />
+        </div>
+        <input
+          id="cardName"
+          class="input-dark"
+          placeholder="Name on Card"
+        /><button
+          class="btn-green"
+          onclick="doAddCard()"
+          style="margin-top: 14px"
+        >
+          Save Card</button
+        ><button
+          class="btn-primary cancel-bright"
+          onclick="closeMods()"
+          style="margin-top: 8px"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <div id="billModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: var(--text)" id="billTitle">Pay Bill</h3>
+        <input
+          id="billNumber"
+          class="input-dark"
+          placeholder="Phone / Meter / Smartcard"
+          style="margin-top: 14px"
+        /><input
+          id="billAmount"
+          class="input-dark"
+          placeholder="Amount"
+          type="number"
+        />
+        <p style="color: var(--green); font-size: 10px; margin-top: 6px">
+          💚 2% Cashback
+        </p>
+        <button
+          class="btn-green"
+          onclick="doBillPay()"
+          style="margin-top: 14px"
+        >
+          Pay Now</button
+        ><button
+          class="btn-primary cancel-bright"
+          onclick="closeMods()"
+          style="margin-top: 8px"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <div id="referralModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: var(--text)">Referral 👥</h3>
+        <div
+          style="
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 14px;
+            text-align: center;
+          "
+        >
+          <p style="color: var(--muted); font-size: 11px">Your Referral Code</p>
+          <h2
+            style="color: var(--green); margin-top: 6px; letter-spacing: 4px"
+            id="refCodeModal"
+          >
+            ---
+          </h2>
+          <p style="color: var(--muted); font-size: 11px; margin-top: 8px">
+            Share code, earn ₦500 per friend
+          </p>
+          <button
+            class="btn-green"
+            onclick="copyRefCode()"
+            style="margin-top: 12px"
+          >
+            Copy Code</button
+          ><button
+            class="btn-primary"
+            style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              color: var(--text);
+              margin-top: 8px;
+            "
+            onclick="shareRefCode()"
+          >
+            Share Link
+          </button>
+        </div>
+        <div
+          style="
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 12px;
+          "
+        >
+          <h4 style="color: var(--text); font-size: 13px">My Referrals</h4>
+          <div id="refList" style="margin-top: 10px">
+            <p style="color: var(--muted); font-size: 11px; text-align: center">
+              Loading...
+            </p>
+          </div>
+        </div>
+        <button
+          class="btn-primary cancel-bright"
+          onclick="closeMods()"
+          style="margin-top: 14px"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+    <div id="analyticsModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: var(--text)">Analytics 📊</h3>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+          "
+        >
+          <div
+            style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              border-radius: 12px;
+              padding: 14px;
+              text-align: center;
+            "
+          >
+            <p style="color: var(--muted); font-size: 10px">Total Spent</p>
+            <p
+              style="color: var(--text); font-size: 16px; font-weight: 800"
+              id="anaSpent"
+            >
+              ₦0
+            </p>
+          </div>
+          <div
+            style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              border-radius: 12px;
+              padding: 14px;
+              text-align: center;
+            "
+          >
+            <p style="color: var(--muted); font-size: 10px">Total Received</p>
+            <p
+              style="color: var(--green); font-size: 16px; font-weight: 800"
+              id="anaReceived"
+            >
+              ₦0
+            </p>
+          </div>
+          <div
+            style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              border-radius: 12px;
+              padding: 14px;
+              text-align: center;
+            "
+          >
+            <p style="color: var(--muted); font-size: 10px">Transactions</p>
+            <p
+              style="color: var(--text); font-size: 16px; font-weight: 800"
+              id="anaCount"
+            >
+              0
+            </p>
+          </div>
+          <div
+            style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              border-radius: 12px;
+              padding: 14px;
+              text-align: center;
+            "
+          >
+            <p style="color: var(--muted); font-size: 10px">Cashback</p>
+            <p
+              style="color: var(--green); font-size: 16px; font-weight: 800"
+              id="anaCashback"
+            >
+              ₦0
+            </p>
+          </div>
+        </div>
+        <button
+          class="btn-primary cancel-bright"
+          onclick="closeMods()"
+          style="margin-top: 14px"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+    <div id="managerModal" class="modal">
+      <div class="sheet">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h3 style="color: var(--text)">Manager Panel 👑</h3>
+          <div
+            onclick="closeMods()"
+            style="
+              width: 32px;
+              height: 32px;
+              background: var(--bg);
+              border: 1px solid var(--border);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              color: var(--text);
+            "
+          >
+            ✕
+          </div>
+        </div>
+        <div
+          style="
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 16px;
+          "
+        >
+          <h4 style="color: var(--text); font-size: 13px">Fund User</h4>
+          <input
+            id="fundAccount"
+            class="input-dark"
+            placeholder="User Account"
+            type="number"
+            style="margin-top: 10px"
+          /><input
+            id="fundAmount"
+            class="input-dark"
+            placeholder="Amount"
+            type="number"
+          /><input
+            id="fundRemark"
+            class="input-dark"
+            placeholder="Remarks"
+          /><button
+            class="btn-green"
+            onclick="fundUser()"
+            style="margin-top: 10px"
+          >
+            Fund Account
+          </button>
+        </div>
+        <div
+          style="
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 12px;
+          "
+        >
+          <h4 style="color: var(--text); font-size: 13px">
+            💬 User Support Chats
+          </h4>
+          <div
+            id="managerChatList"
+            style="margin-top: 10px; max-height: 260px; overflow: auto"
+          ></div>
+          <div id="managerChatView" style="display: none; margin-top: 10px">
+            <div
+              id="managerChatHistory"
+              style="
+                max-height: 200px;
+                overflow: auto;
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 10px;
+              "
+            ></div>
+            <p style="color: var(--muted); font-size: 11px; margin-top: 8px">
+              Replying to <b id="replyToName" style="color: var(--text)"></b>
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: 6px">
+              <input
+                id="managerReplyInput"
+                class="input-dark"
+                placeholder="Type reply..."
+                style="margin-top: 0; flex: 1"
+              /><button
+                class="btn-green"
+                onclick="sendManagerReply()"
+                style="width: 70px; margin-top: 0"
+              >
+                Send
+              </button>
+            </div>
+            <button
+              class="btn-primary"
+              style="
+                background: var(--bg);
+                border: 1px solid var(--border);
+                color: var(--text);
+                margin-top: 8px;
+                font-size: 10px;
+              "
+              onclick="
+                document.getElementById('managerChatView').style.display =
+                  'none';
+                loadManagerChats();
+              "
+            >
+              ← Back to list
+            </button>
+          </div>
+          <button
+            class="btn-primary"
+            style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              color: var(--text);
+              margin-top: 8px;
+              font-size: 11px;
+            "
+            onclick="loadManagerChats()"
+          >
+            Refresh Chats
+          </button>
+        </div>
+        <div
+          style="
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 12px;
+          "
+        >
+          <h4 style="color: var(--text); font-size: 13px">All Users</h4>
+          <div
+            id="allUsers"
+            style="margin-top: 10px; max-height: 200px; overflow: auto"
+          ></div>
+          <button
+            class="btn-primary"
+            style="
+              background: var(--bg);
+              border: 1px solid var(--border);
+              color: var(--text);
+              margin-top: 8px;
+              font-size: 11px;
+            "
+            onclick="loadAllUsers()"
+          >
+            Refresh
+          </button>
+        </div>
+        <button
+          class="btn-primary cancel-bright"
+          onclick="closeMods()"
+          style="margin-top: 16px"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+    <div id="userChatModal" class="modal">
+      <div class="sheet">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h3 style="color: var(--text)">Chat with Manager 💬</h3>
+          <div
+            onclick="closeMods()"
+            style="
+              width: 32px;
+              height: 32px;
+              background: var(--bg);
+              border: 1px solid var(--border);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              color: var(--text);
+            "
+          >
+            ✕
+          </div>
+        </div>
+        <div
+          id="userChatMessages"
+          style="
+            margin-top: 14px;
+            max-height: 340px;
+            overflow: auto;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+          "
+        ></div>
+        <div style="display: flex; gap: 8px; margin-top: 12px">
+          <input
+            id="userChatInput"
+            class="input-dark"
+            placeholder="Type message to manager..."
+            style="margin-top: 0; flex: 1"
+          /><button
+            class="btn-green"
+            onclick="sendUserMessage()"
+            style="width: 80px; margin-top: 0"
+          >
+            Send
+          </button>
+        </div>
+        <button
+          class="btn-primary cancel-bright"
+          onclick="closeMods()"
+          style="margin-top: 12px"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        doc,
+        getDoc,
+        updateDoc,
+        collection,
+        addDoc,
+        query,
+        where,
+        getDocs,
+        runTransaction,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const uid =
+        localStorage.getItem("uid") || localStorage.getItem("kretos_uid");
+      if (!uid) location.href = "login.html";
+      let userData = null,
+        recipientData = null,
+        recipientUid = null,
+        lastReceipt = null;
+      let balVisible = true,
+        realBal = "0",
+        isExternalTransfer = false;
+      const MANAGER_EMAIL = "zarakretos44@gmail.com";
+      const MANAGER_NAME = "Zaharadeen Tijjani Abdulsalam";
+      function isManagerUser(d) {
+        if (!d) return false;
+        return (
+          (d.email && d.email.toLowerCase() === MANAGER_EMAIL.toLowerCase()) ||
+          d.fullName === MANAGER_NAME
+        );
+      }
+      function maskAccount(acct) {
+        if (!acct) return "***";
+        const s = acct.toString();
+        if (s.length <= 3) return s[0] + "**";
+        return s[0] + "*".repeat(s.length - 3) + s.slice(-2);
+      }
+      async function load() {
+        const snap = await getDoc(doc(db, "users", uid));
+        if (!snap.exists()) return (location.href = "login.html");
+        userData = snap.data();
+        if (!userData.accountNumber) {
+          const raw = (userData.phone || "").replace(/\D/g, "");
+          const newAcct = raw.startsWith("0")
+            ? raw.substring(1)
+            : raw || Date.now().toString().slice(-10);
+          await updateDoc(doc(db, "users", uid), { accountNumber: newAcct });
+          userData.accountNumber = newAcct;
+        }
+        if (!userData.referralCode) {
+          const code =
+            "SPS" + Math.random().toString(36).substring(2, 7).toUpperCase();
+          await updateDoc(doc(db, "users", uid), { referralCode: code });
+          userData.referralCode = code;
+        }
+        realBal = Number(userData.balance || 0).toLocaleString();
+        document.getElementById("bal").innerText = realBal;
+        document.getElementById("userEmail").innerText = userData.email;
+        document.getElementById("userFullName").innerText = userData.fullName;
+        document.getElementById("topUserName").innerText =
+          "Hi, " + userData.fullName.split(" ")[0];
+        document.getElementById("topUserPhone").innerText =
+          userData.accountNumber;
+        document.getElementById("acctShow").innerText =
+          "Acct: " + userData.accountNumber;
+        document.getElementById("refCodeShow").innerText =
+          userData.referralCode || "SPS---";
+        document.getElementById("refCodeModal").innerText =
+          userData.referralCode || "SPS---";
+        const topPic = document.getElementById("topPic");
+        if (userData.profilePic) topPic.src = userData.profilePic;
+        else if (userData.facePhoto) topPic.src = userData.facePhoto;
+        if (isManagerUser(userData)) {
+          document.getElementById("managerBtn").style.display = "block";
+          document.getElementById("isManagerTag").style.display = "block";
+        }
+        loadTx();
+        loadAnalytics();
+      }
+      async function loadTx() {
+        const q = query(
+          collection(db, "transactions"),
+          where("participants", "array-contains", uid),
+        );
+        const snap = await getDocs(q);
+        const list = document.getElementById("txList");
+        if (snap.empty) {
+          list.innerHTML =
+            '<p style="color:var(--muted);font-size:13px;text-align:center;margin-top:20px">No transactions yet</p>';
+          return;
+        }
+        let arr = [];
+        snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+        arr.sort(
+          (a, b) =>
+            (b.createdAt?.toDate
+              ? b.createdAt.toDate()
+              : new Date(b.createdAt)) -
+            (a.createdAt?.toDate
+              ? a.createdAt.toDate()
+              : new Date(a.createdAt)),
+        );
+        // Build recent contacts from your transactions
+        try {
+          recentContactIds.clear();
+          transactions.forEach((tx) => {
+            if (tx.fromUid && tx.fromUid !== uid)
+              recentContactIds.add(tx.fromUid);
+            if (tx.toUid && tx.toUid !== uid) recentContactIds.add(tx.toUid);
+            if (tx.recipientUid && tx.recipientUid !== uid)
+              recentContactIds.add(tx.recipientUid);
+          });
+          console.log("Recent contacts:", recentContactIds.size);
+        } catch (e) {}
+        let html = "";
+        arr.slice(0, 6).forEach((t) => {
+          const isOut = t.fromUid === uid;
+          html += `<div class="tx" onclick='showReceiptFromHistory(${JSON.stringify(t).replace(/'/g, "&#39;")})'><div><p style="font-size:14px;color:var(--text)">${isOut ? "Sent to " : "Received "}${isOut ? t.toName : t.fromName}</p><p style="font-size:11px;color:var(--muted)">${maskAccount(t.toAccount)} • ${new Date(t.createdAt?.toDate ? t.createdAt.toDate() : t.createdAt).toLocaleDateString()}</p></div><p style="color:${isOut ? "#ff5555" : "var(--green)"};font-weight:700">${isOut ? "-" : "+"}₦${t.amount}</p></div>`;
+        });
+        list.innerHTML = html;
+      }
+      async function loadAnalytics() {
+        const q = query(
+          collection(db, "transactions"),
+          where("participants", "array-contains", uid),
+        );
+        const snap = await getDocs(q);
+        let spent = 0,
+          received = 0,
+          count = snap.size;
+        snap.forEach((d) => {
+          const t = d.data();
+          if (t.fromUid === uid) spent += Number(t.amount || 0);
+          else received += Number(t.amount || 0);
+        });
+        document.getElementById("anaSpent").innerText =
+          "₦" + spent.toLocaleString();
+        document.getElementById("anaReceived").innerText =
+          "₦" + received.toLocaleString();
+        document.getElementById("anaCount").innerText = count;
+        document.getElementById("anaCashback").innerText =
+          "₦" + Math.floor(spent * 0.02).toLocaleString();
+      }
+      window.toggleBal = () => {
+        balVisible = !balVisible;
+        const b = document.getElementById("bal"),
+          h = document.getElementById("balHidden"),
+          eye = document.getElementById("eyeBal");
+        if (balVisible) {
+          b.style.display = "inline";
+          h.style.display = "none";
+          eye.innerText = "👁️ Hide";
+          b.innerText = realBal;
+        } else {
+          b.style.display = "none";
+          h.style.display = "inline";
+          eye.innerText = "🙈 Show";
+        }
+      };
+      window.togglePin = (id, el) => {
+        const input = document.getElementById(id);
+        input.type = input.type === "password" ? "text" : "password";
+        el.innerText = input.type === "password" ? "👁️" : "🙈";
+      };
+      let currentBillType = "";
+      window.openBill = (type) => {
+        currentBillType = type;
+        document.getElementById("billTitle").innerText = "Buy " + type;
+        document.getElementById("billModal").style.display = "flex";
+      };
+      window.doBillPay = async () => {
+        if (userData.virtualCard && userData.virtualCard.frozen) {
+          return alert("❄️ Card Frozen! Unfreeze in Virtual Card page");
+        }
+        const num = document.getElementById("billNumber").value.trim();
+        const amt = Number(document.getElementById("billAmount").value);
+        if (!num || !amt) return alert("Fill all");
+        if (amt > userData.balance) return alert("Insufficient");
+        await updateDoc(doc(db, "users", uid), {
+          balance: userData.balance - amt,
+        });
+        const txnId = Math.floor(
+          100000000000 + Math.random() * 900000000000,
+        ).toString();
+        await addDoc(collection(db, "transactions"), {
+          fromUid: uid,
+          toUid: uid,
+          fromName: userData.fullName,
+          toName: currentBillType + " - " + num,
+          fromEmail: userData.email,
+          toEmail: userData.email,
+          toAccount: num,
+          fromAccount: userData.accountNumber,
+          amount: amt,
+          type: "bill",
+          remark: currentBillType + " Purchase",
+          txnId,
+          participants: [uid],
+          createdAt: new Date(),
+        });
+        document.getElementById("billModal").style.display = "none";
+        lastReceipt = {
+          txn: txnId,
+          dateStr: new Date().toLocaleString(),
+          amount: amt,
+          fromName: userData.fullName,
+          fromAcct: userData.accountNumber,
+          toName: currentBillType,
+          toAcct: num,
+          remark: currentBillType + " Payment",
+          bank: "SPS BANK",
+        };
+        document.getElementById("receiptPreview").innerHTML =
+          renderReceiptHTML(lastReceipt);
+        document.getElementById("receiptPreview").style.display = "block";
+        document.getElementById("successText").innerText =
+          currentBillType + " ₦" + amt + " successful ✅";
+        document.getElementById("successPop").style.display = "flex";
+      };
+      window.openSend = () =>
+        (document.getElementById("sendModal").style.display = "flex");
+      window.openAddCard = () =>
+        (document.getElementById("addCardModal").style.display = "flex");
+      window.openReferral = async () => {
+        document.getElementById("referralModal").style.display = "flex";
+        const q = query(
+          collection(db, "users"),
+          where("referredBy", "==", userData.referralCode),
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          document.getElementById("refList").innerHTML =
+            '<p style="color:var(--muted);font-size:11px;text-align:center">No referrals yet. Share your code!</p>';
+        } else {
+          let html = "";
+          snap.forEach((d) => {
+            const u = d.data();
+            html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><p style="color:var(--text);font-size:12px">${u.fullName}</p><p style="color:var(--green);font-size:11px">+₦500</p></div>`;
+          });
+          document.getElementById("refList").innerHTML = html;
+        }
+      };
+      window.openAnalytics = () => {
+        document.getElementById("analyticsModal").style.display = "flex";
+        loadAnalytics();
+      };
+      window.copyRefCode = () => {
+        navigator.clipboard.writeText(userData.referralCode);
+        alert("Copied: " + userData.referralCode);
+      };
+      window.shareRefCode = () => {
+        const text = `Join SPS BANK with my code ${userData.referralCode} and get ₦500 bonus!`;
+        if (navigator.share) {
+          navigator.share({ title: "SPS BANK Referral", text });
+        } else {
+          window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+        }
+      };
+      let currentChatUid = null;
+      window.openUserChat = async () => {
+        document.getElementById("userChatModal").style.display = "flex";
+        loadUserChats();
+      };
+      window.loadUserChats = async () => {
+        const q = query(collection(db, "chats"), where("userUid", "==", uid));
+        const snap = await getDocs(q);
+        let arr = [];
+        snap.forEach((d) => arr.push(d.data()));
+        arr.sort(
+          (a, b) =>
+            new Date(a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt) -
+            new Date(b.createdAt?.toDate ? b.createdAt.toDate() : b.createdAt),
+        );
+        const box = document.getElementById("userChatMessages");
+        if (arr.length === 0) {
+          box.innerHTML =
+            '<p style="color:var(--muted);font-size:11px;text-align:center">No messages yet. Start chat with manager 💬</p>';
+          return;
+        }
+        let html = "";
+        arr.forEach((m) => {
+          const isMe = m.sender === "user";
+          html += `<div style="margin-bottom:8px;text-align:${isMe ? "right" : "left"}"><div style="display:inline-block;background:${isMe ? "var(--green)" : "var(--card)"};color:${isMe ? "#000" : "var(--text)"};padding:8px 12px;border-radius:14px;max-width:80%;font-size:12px;border:1px solid var(--border)">${m.text}<br><span style="font-size:9px;opacity:0.7">${new Date(m.createdAt?.toDate ? m.createdAt.toDate() : m.createdAt).toLocaleTimeString()}</span></div></div>`;
+        });
+        box.innerHTML = html;
+        box.scrollTop = box.scrollHeight;
+      };
+      window.sendUserMessage = async () => {
+        const text = document.getElementById("userChatInput").value.trim();
+        if (!text) return;
+        await addDoc(collection(db, "chats"), {
+          userUid: uid,
+          userName: userData.fullName,
+          userAccount: userData.accountNumber,
+          text: text,
+          sender: "user",
+          createdAt: new Date(),
+        });
+        document.getElementById("userChatInput").value = "";
+        loadUserChats();
+      };
+      window.loadManagerChats = async () => {
+        if (!isManagerUser(userData)) return;
+        const snap = await getDocs(collection(db, "chats"));
+        let map = {};
+        snap.forEach((d) => {
+          const m = d.data();
+          if (!map[m.userUid]) map[m.userUid] = [];
+          map[m.userUid].push({ ...m, id: d.id });
+        });
+        let html = "";
+        for (let uidKey in map) {
+          const msgs = map[uidKey];
+          const last = msgs[msgs.length - 1];
+          html += `<div onclick="openManagerChat('${uidKey}')" style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center"><div><p style="color:var(--text);font-size:12px;font-weight:700">${msgs[0].userName || "User"} - ${maskAccount(msgs[0].userAccount || uidKey)}</p><p style="color:var(--muted);font-size:10px">${last.text.substring(0, 30)}...</p></div><span style="background:var(--green);color:#000;font-size:9px;padding:3px 8px;border-radius:10px">${msgs.length}</span></div>`;
+        }
+        document.getElementById("managerChatList").innerHTML =
+          html ||
+          '<p style="color:var(--muted);font-size:11px;text-align:center">No chats yet</p>';
+      };
+      window.openManagerChat = async (chatUid) => {
+        currentChatUid = chatUid;
+        const q = query(
+          collection(db, "chats"),
+          where("userUid", "==", chatUid),
+        );
+        const snap = await getDocs(q);
+        let arr = [];
+        snap.forEach((d) => arr.push(d.data()));
+        arr.sort(
+          (a, b) =>
+            new Date(a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt) -
+            new Date(b.createdAt?.toDate ? b.createdAt.toDate() : b.createdAt),
+        );
+        let html = "";
+        arr.forEach((m) => {
+          const isManager = m.sender === "manager";
+          html += `<div style="margin-bottom:6px;text-align:${isManager ? "right" : "left"}"><div style="display:inline-block;background:${isManager ? "var(--green)" : "var(--card)"};color:${isManager ? "#000" : "var(--text)"};padding:6px 10px;border-radius:10px;font-size:11px;border:1px solid var(--border)">${m.text}<br><span style="font-size:8px;opacity:0.6">${new Date(m.createdAt?.toDate ? m.createdAt.toDate() : m.createdAt).toLocaleString()}</span></div></div>`;
+        });
+        document.getElementById("managerChatHistory").innerHTML = html;
+        document.getElementById("replyToName").innerText =
+          arr[0]?.userName || chatUid;
+        document.getElementById("managerChatView").style.display = "block";
+        document.getElementById("managerChatHistory").scrollTop =
+          document.getElementById("managerChatHistory").scrollHeight;
+      };
+      window.sendManagerReply = async () => {
+        const text = document.getElementById("managerReplyInput").value.trim();
+        if (!text || !currentChatUid) return;
+        await addDoc(collection(db, "chats"), {
+          userUid: currentChatUid,
+          userName: "Manager Reply",
+          text: text,
+          sender: "manager",
+          managerName: userData.fullName,
+          createdAt: new Date(),
+        });
+        document.getElementById("managerReplyInput").value = "";
+        openManagerChat(currentChatUid);
+      };
+      window.openManager = () => {
+        if (!isManagerUser(userData)) return alert("Manager only");
+        document.getElementById("managerModal").style.display = "flex";
+        loadAllUsers();
+        loadManagerChats();
+      };
+      window.closeMods = () => {
+        document.querySelectorAll(".modal").forEach((m) => {
+          if (m.id !== "pinModal" && m.id !== "changePinModal")
+            m.style.display = "none";
+        });
+      };
+      window.closePinModal = () => {
+        document.getElementById("pinModal").style.display = "none";
+        document.getElementById("sendPin").value = "";
+        document.getElementById("pinError").style.display = "none";
+      };
+      window.closeChangePinModal = () => {
+        document.getElementById("changePinModal").style.display = "none";
+      };
+      window.closeSuccess = () => {
+        document.getElementById("successPop").style.display = "none";
+        load();
+      };
+      window.onBankChange = () => {
+        const bank = document.getElementById("bankSelect").value;
+        const acct = document.getElementById("sendAccount").value.trim();
+        if (bank !== "SPS BANK" && acct) {
+          recipientData = {
+            fullName: "External - " + bank,
+            accountNumber: acct,
+            bank: bank,
+            balance: 0,
+          };
+          recipientUid = null;
+          isExternalTransfer = true;
+          document.getElementById("recipientType").innerText =
+            bank.toUpperCase() + " - EXTERNAL";
+          document.getElementById("recipientNameText").innerText =
+            maskAccount(acct);
+          document.getElementById("recipientAcctText").innerText =
+            maskAccount(acct) + " • " + bank;
+          document.getElementById("recipientBankText").innerText = bank;
+          document.getElementById("recipientName").style.display = "block";
+          document.getElementById("sendBtn").disabled = false;
+          document.getElementById("sendBtn").style.opacity = "1";
+        }
+      };
+      window.checkAccount = async () => {
+        const raw = document.getElementById("sendAccount").value.trim();
+        const acct = raw.replace(/\D/g, "");
+        const bank = document.getElementById("bankSelect").value;
+        const nameBox = document.getElementById("recipientName");
+        const sugBox = document.getElementById("acctSuggestion");
+        const verifyBtn = document.getElementById("verifyBtn");
+
+        // 1. IF CLEARED - RESET (this fixes your 9*16 bug)
+        if (!acct) {
+          nameBox.style.display = "none";
+          sugBox.style.display = "none";
+          recipientData = null;
+          recipientUid = null;
+          isExternalTransfer = false;
+          verifyBtn.innerText = "Verify";
+          document.getElementById("sendBtn").disabled = true;
+          document.getElementById("sendBtn").style.opacity = "0.5";
+          return;
+        }
+
+        // 2. FAST - INSTANT from cache
+        if (bank === "SPS BANK" && allUsersCache.length > 0) {
+          for (let u of allUsersCache) {
+            const acc = (u.accountNumber || "").toString();
+            if (acc === acct) {
+              recipientData = u;
+              recipientUid = u.id;
+              isExternalTransfer = false;
+              const isSelf = u.id === uid;
+              document.getElementById("recipientType").innerText = isSelf
+                ? "YOURSELF - SELF SEED 👑"
+                : "SPS BANK - VERIFIED ✅";
+              document.getElementById("recipientNameText").innerText = (
+                u.fullName || ""
+              ).toUpperCase();
+              document.getElementById("recipientAcctText").innerText =
+                maskAccount(u.accountNumber) + " • SPS BANK";
+              document.getElementById("recipientBankText").innerText =
+                "SPS BANK";
+              nameBox.style.display = "block";
+              sugBox.style.display = "none";
+              document.getElementById("sendBtn").disabled = false;
+              document.getElementById("sendBtn").style.opacity = "1";
+              verifyBtn.innerText = isSelf ? "✓ Self" : "✓ Verified";
+              return;
+            }
+          }
+        }
+
+        // 3. SPS BANK but not found - NEVER show external
+        if (bank === "SPS BANK") {
+          if (acct.length < 10) return; // still typing
+          recipientData = null;
+          recipientUid = null;
+          isExternalTransfer = false;
+          document.getElementById("recipientType").innerText =
+            "NOT FOUND - CHECK NUMBER";
+          document.getElementById("recipientNameText").innerText = "NO USER";
+          document.getElementById("recipientAcctText").innerText =
+            raw + " • NOT FOUND";
+          document.getElementById("recipientBankText").innerText = "SPS BANK";
+          nameBox.style.display = "block";
+          document.getElementById("sendBtn").disabled = true;
+          document.getElementById("sendBtn").style.opacity = "0.5";
+          verifyBtn.innerText = "Not Found";
+          return;
+        }
+
+        // 4. External banks only
+        isExternalTransfer = true;
+        recipientData = {
+          fullName: "External - " + bank,
+          accountNumber: acct,
+          bank: bank,
+        };
+        recipientUid = acct;
+        document.getElementById("recipientType").innerText =
+          bank.toUpperCase() + " - EXTERNAL";
+        document.getElementById("recipientNameText").innerText = raw;
+        document.getElementById("recipientAcctText").innerText =
+          raw + " • " + bank;
+        document.getElementById("recipientBankText").innerText = bank;
+        nameBox.style.display = "block";
+        document.getElementById("sendBtn").disabled = false;
+        document.getElementById("sendBtn").style.opacity = "1";
+        verifyBtn.innerText = "✓ Verified External";
+      };
+      window.openPinModal = () => {
+        const amount = Number(document.getElementById("sendAmount").value);
+        if (!recipientData) return alert("Verify account first");
+        if (!amount || amount <= 0) return alert("Enter valid amount");
+        if (amount > userData.balance) return alert("Insufficient");
+        document.getElementById("pinConfirmText").innerText =
+          `To ${recipientData.fullName} • ${maskAccount(recipientData.accountNumber)} • ${document.getElementById("bankSelect").value}`;
+        document.getElementById("pinConfirmAmount").innerText =
+          `₦${amount.toLocaleString()}`;
+        document.getElementById("finalSendBtn").innerText =
+          `Confirm ₦${amount.toLocaleString()} Send`;
+        document.getElementById("pinModal").style.display = "flex";
+      };
+      function makeReceipt(from, to, amount, remark, bank) {
+        return {
+          txn: Math.floor(
+            1000000000000 + Math.random() * 9000000000000,
+          ).toString(),
+          dateStr: new Date().toLocaleString(),
+          amount,
+          fromName: userData.fullName,
+          fromAcct: userData.accountNumber,
+          toName: to.fullName,
+          toAcct: to.accountNumber,
+          remark,
+          bank,
+        };
+      }
+      function renderReceiptHTML(r) {
+        const maskedFrom = maskAccount(r.fromAcct);
+        const maskedTo = maskAccount(r.toAcct);
+        return `<div style="color:#000"><div style="text-align:center;border-bottom:1px dashed #ccc;padding-bottom:12px"><h3 style="margin:0">SPS BANK</h3><p style="font-size:10px;color:#666">Transaction Receipt</p></div><div style="margin-top:12px"><p style="font-size:22px;font-weight:800;margin:0">₦${Number(r.amount).toLocaleString()}</p><p style="font-size:11px;color:#00b86a;font-weight:700;margin-top:4px">SUCCESSFUL ✅</p></div><div style="background:#f6f6f6;border-radius:10px;padding:12px;margin-top:12px"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:#666">Txn ID</span><span style="font-size:11px;font-weight:700;color:#000">${r.txn}</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:#666">Date & Time</span><span style="font-size:11px;font-weight:700;color:#000">${r.dateStr}</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;color:#666">Bank</span><span style="font-size:11px;font-weight:700;color:#000">${r.bank}</span></div><div style="display:flex;justify-content:space-between"><span style="font-size:11px;color:#666">Remark</span><span style="font-size:11px;font-weight:700;color:#000">${r.remark}</span></div></div><div style="margin-top:14px"><p style="font-size:10px;color:#999">FROM</p><p style="font-size:12px;font-weight:700;color:#000;margin-top:2px">${r.fromName}</p><p style="font-size:12px;color:#333">${maskedFrom} • ${r.bank}</p><p style="font-size:10px;color:#999;margin-top:10px">TO</p><p style="font-size:12px;font-weight:700;color:#000;margin-top:2px">${r.toName}</p><p style="font-size:12px;color:#333">${maskedTo} • ${r.bank}</p></div><p style="font-size:10px;margin-top:14px;color:#00b86a;font-weight:700;text-align:center">Thank you for using SPS BANK 💚<br/>${r.dateStr}</p></div>`;
+      }
+      // FAST - reads first, clears UI instantly
+      window.doSend = async () => {
+        const pin = document.getElementById("sendPin").value.trim();
+        const amount = Number(
+          document.getElementById("sendAmount").value.trim(),
+        );
+        const remark =
+          document.getElementById("sendRemark").value.trim() || "Transfer";
+        const bank = document.getElementById("bankSelect").value;
+        const err = document.getElementById("pinError");
+        const btn = document.getElementById("finalSendBtn");
+
+        if (!recipientData) return alert("Verify account first");
+        if (!amount || amount < 100) return alert("Min ₦100");
+        if (pin.length !== 6) {
+          err.style.display = "block";
+          err.innerText = "PIN must be 6 digits";
+          return;
+        }
+        if (pin !== userData.pin) {
+          err.style.display = "block";
+          err.innerText = "Wrong PIN ❌";
+          return;
+        }
+
+        // Lock button instantly
+        btn.innerText = "Sending... ⏳";
+        btn.disabled = true;
+        err.style.display = "none";
+
+        // Save data before clearing
+        const amountCopy = amount;
+        const recipientCopy = { ...recipientData };
+        const recipientUidCopy = recipientUid;
+        const isExternalCopy = isExternalTransfer;
+        const remarkCopy = remark;
+        const bankCopy = bank;
+
+        try {
+          // 1. TRANSACTION - only balance update (fastest part)
+          await runTransaction(db, async (transaction) => {
+            const senderRef = doc(db, "users", uid);
+            const senderSnap = await transaction.get(senderRef);
+            if (!senderSnap.exists()) throw "Sender not found";
+            const freshBalance = Number(senderSnap.data().balance || 0);
+            if (freshBalance < amountCopy)
+              throw "Insufficient - ₦" + freshBalance.toLocaleString();
+
+            let recRef = null;
+            let recSnap = null;
+            if (!isExternalCopy && recipientUidCopy) {
+              recRef = doc(db, "users", recipientUidCopy);
+              recSnap = await transaction.get(recRef);
+              if (!recSnap.exists()) throw "Recipient gone";
+            }
+
+            transaction.update(senderRef, {
+              balance: freshBalance - amountCopy,
+            });
+            if (recRef && recSnap) {
+              transaction.update(recRef, {
+                balance: Number(recSnap.data().balance || 0) + amountCopy,
+              });
+            }
+          });
+
+          // 2. CLEAR FORM INSTANTLY AFTER SUCCESS - before receipt
+          document.getElementById("sendAccount").value = "";
+          document.getElementById("sendAmount").value = "";
+          document.getElementById("sendRemark").value = "";
+          document.getElementById("sendPin").value = "";
+          document.getElementById("recipientName").style.display = "none";
+          document.getElementById("acctSuggestion").style.display = "none";
+          document.getElementById("verifyBtn").innerText = "Verify Account";
+          document.getElementById("sendBtn").disabled = true;
+          document.getElementById("sendBtn").style.opacity = "0.5";
+          recipientData = null;
+          recipientUid = null;
+
+          // 3. Log transaction in background (don't await - faster)
+          const txnId = Math.floor(
+            1000000000000 + Math.random() * 9000000000000,
+          ).toString();
+          const nowDate = new Date();
+          addDoc(collection(db, "transactions"), {
+            fromUid: uid,
+            toUid: recipientUidCopy || recipientCopy.accountNumber,
+            fromName: userData.fullName,
+            toName: recipientCopy.fullName,
+            fromAccount: userData.accountNumber,
+            toAccount: recipientCopy.accountNumber,
+            amount: amountCopy,
+            type: isExternalCopy ? "external_transfer" : "send",
+            remark: remarkCopy,
+            txnId,
+            bank: bankCopy,
+            participants: recipientUidCopy ? [uid, recipientUidCopy] : [uid],
+            createdAt: nowDate,
+            isExternal: isExternalCopy,
+          });
+
+          // 4. Show success
+          document.getElementById("pinModal").style.display = "none";
+          document.getElementById("sendModal").style.display = "none";
+          lastReceipt = makeReceipt(
+            userData,
+            recipientCopy,
+            amountCopy,
+            remarkCopy,
+            bankCopy,
+          );
+          lastReceipt.txn = txnId;
+          lastReceipt.dateStr = nowDate.toLocaleString();
+          document.getElementById("receiptPreview").innerHTML =
+            renderReceiptHTML(lastReceipt);
+          document.getElementById("receiptPreview").style.display = "block";
+          document.getElementById("successText").innerText =
+            `₦${amountCopy.toLocaleString()} sent to ${recipientCopy.fullName} ✅`;
+          document.getElementById("successPop").style.display = "flex";
+          document.body.style.overflow = "hidden";
+
+          // Update local balance instantly
+          userData.balance -= amountCopy;
+          realBal = Number(userData.balance).toLocaleString();
+          document.getElementById("bal").innerText = realBal;
+        } catch (e) {
+          err.style.display = "block";
+          err.innerText = typeof e === "string" ? e : e.message;
+        } finally {
+          btn.innerText = "Confirm Send";
+          btn.disabled = false;
+        }
+      };
+      window.openChangePin = () => {
+        document.getElementById("changePinModal").style.display = "flex";
+      };
+      window.doChangePin = async () => {
+        const oldPin = document.getElementById("oldPin").value.trim();
+        const newPin = document.getElementById("newPin").value.trim();
+        const confirmNew = document
+          .getElementById("confirmNewPin")
+          .value.trim();
+        const err = document.getElementById("changePinError");
+
+        // 1. Fill all
+        if (!oldPin || !newPin || !confirmNew) {
+          err.style.display = "block";
+          err.innerText = "Fill all fields";
+          return;
+        }
+
+        // 2. Must be 6 digits
+        if (
+          oldPin.length !== 6 ||
+          newPin.length !== 6 ||
+          confirmNew.length !== 6
+        ) {
+          err.style.display = "block";
+          err.innerText = "PIN must be 6 digits";
+          return;
+        }
+        if (isNaN(oldPin) || isNaN(newPin) || isNaN(confirmNew)) {
+          err.style.display = "block";
+          err.innerText = "Digits only";
+          return;
+        }
+
+        // 3. Old must be correct (from Firebase)
+        if (oldPin !== userData.pin) {
+          err.style.display = "block";
+          err.innerText = "Current PIN incorrect ❌";
+          return;
+        }
+
+        // 4. THE FIRST YELLOW HIGHLIGHT — new == confirm
+        if (newPin !== confirmNew) {
+          err.style.display = "block";
+          err.innerText = "New PIN and Confirm don't match ❌";
+          return;
+        }
+
+        // 5. THE SECOND YELLOW HIGHLIGHT — old != new
+        if (oldPin === newPin) {
+          err.style.display = "block";
+          err.innerText = "New PIN must be different from old PIN";
+          return;
+        }
+
+        // 6. Optional but strong: prevent weak PINs
+        if (["123456", "000000", "111111", "654321"].includes(newPin)) {
+          err.style.display = "block";
+          err.innerText = "Too weak - avoid 123456, 000000";
+          return;
+        }
+
+        // 7. Save
+        await updateDoc(doc(db, "users", uid), { pin: newPin });
+        userData.pin = newPin;
+
+        // Clear inputs
+        document.getElementById("oldPin").value = "";
+        document.getElementById("newPin").value = "";
+        document.getElementById("confirmNewPin").value = "";
+        err.style.display = "none";
+
+        alert("PIN changed ✅");
+        closeChangePinModal();
+      };
+
+      window.showReceiptFromHistory = (t) => {
+        lastReceipt = {
+          amount: t.amount,
+          fromName: t.fromName,
+          fromAcct: t.fromAccount,
+          toName: t.toName,
+          toAcct: t.toAccount,
+          remark: t.remark || t.type,
+          bank: t.bank || "SPS BANK",
+          txn: t.txnId,
+          dateStr: t.createdAt
+            ? t.createdAt.toDate().toLocaleString()
+            : new Date().toLocaleString(),
+        };
+        document.getElementById("receiptPreview").innerHTML =
+          renderReceiptHTML(lastReceipt);
+        document.getElementById("receiptPreview").style.display = "block";
+        document.getElementById("successText").innerText =
+          "Receipt - ₦" + Number(t.amount).toLocaleString();
+        const pop = document.getElementById("successPop");
+        pop.style.display = "flex";
+        pop.style.overflowY = "auto"; // ALLOW SCROLL
+        document.body.style.overflow = "hidden"; // lock bg
+      };
+
+      window.closeSuccessPop = () => {
+        document.getElementById("successPop").style.display = "none";
+        document.getElementById("receiptPreview").style.display = "none";
+        document.body.style.overflow = "auto"; // UNLOCK SCROLL
+        document.body.classList.remove("no-scroll");
+      };
+
+      // Close when clicking outside receipt
+      document.getElementById("successPop")?.addEventListener("click", (e) => {
+        if (e.target.id === "successPop") closeSuccessPop();
+      });
+      function getShareText() {
+        if (!lastReceipt) return "SPS BANK";
+        return `SPS BANK RECEIPT ✅\nAmount: ₦${Number(lastReceipt.amount).toLocaleString()}\nTxn: ${lastReceipt.txn}\nDate: ${lastReceipt.dateStr}\nBank: ${lastReceipt.bank}\nFrom: ${lastReceipt.fromName} (${maskAccount(lastReceipt.fromAcct)})\nTo: ${lastReceipt.toName} (${maskAccount(lastReceipt.toAcct)})\nRemark: ${lastReceipt.remark}\nStatus: SUCCESSFUL`;
+      }
+      window.downloadPDF = () => {
+        if (!lastReceipt) return;
+        const { jsPDF } = window.jspdf;
+        const docPDF = new jsPDF();
+        docPDF.setFontSize(14);
+        docPDF.text("SPS BANK RECEIPT", 20, 20);
+        docPDF.setFontSize(11);
+        docPDF.text("Amount: NGN " + lastReceipt.amount, 20, 30);
+        docPDF.text("Txn: " + lastReceipt.txn, 20, 38);
+        docPDF.text("Date: " + lastReceipt.dateStr, 20, 46);
+        docPDF.text("Bank: " + lastReceipt.bank, 20, 54);
+        docPDF.text(
+          "From: " +
+            lastReceipt.fromName +
+            " - " +
+            maskAccount(lastReceipt.fromAcct),
+          20,
+          62,
+        );
+        docPDF.text(
+          "To: " + lastReceipt.toName + " - " + maskAccount(lastReceipt.toAcct),
+          20,
+          70,
+        );
+        docPDF.text("Remark: " + lastReceipt.remark, 20, 78);
+        docPDF.text("Status: SUCCESSFUL", 20, 86);
+        docPDF.save(lastReceipt.txn + ".pdf");
+      };
+      window.downloadImage = () => {
+        alert("Take screenshot of receipt - masked ✅");
+      };
+      window.doAddCard = async () => {
+        const num = document
+          .getElementById("cardNumber")
+          .value.replace(/\s/g, "");
+        if (num.length < 16) return alert("16 digits");
+        await updateDoc(doc(db, "users", uid), {
+          cardLast4: num.slice(-4),
+          hasCard: true,
+        });
+        closeMods();
+        alert("Card saved");
+      };
+
+      window.fundUser = async () => {
+        if (!isManagerUser(userData)) return alert("Manager only");
+        let acct = document.getElementById("fundAccount").value.trim();
+        const amt = Number(document.getElementById("fundAmount").value.trim());
+        const remark =
+          document.getElementById("fundRemark").value.trim() ||
+          "Manager Funding";
+        if (!acct) return alert("Enter account");
+        if (!amt || amt <= 0) return alert("Invalid amount");
+        const isSelf =
+          acct === userData.accountNumber ||
+          acct === "0" + userData.accountNumber;
+        if (
+          isSelf &&
+          !confirm("⚠️ Seed YOUR OWN with ₦" + amt.toLocaleString() + "?")
+        )
+          return;
+        let noZero = acct.startsWith("0") ? acct.substring(1) : acct;
+        let withZero = acct.startsWith("0") ? acct : "0" + acct;
+        try {
+          const { runTransaction } =
+            await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+          let targetId = isSelf ? uid : null;
+          let targetData = isSelf ? userData : null;
+          if (!isSelf) {
+            for (let q of [
+              query(
+                collection(db, "users"),
+                where("accountNumber", "==", noZero),
+              ),
+              query(
+                collection(db, "users"),
+                where("accountNumber", "==", withZero),
+              ),
+            ]) {
+              let s = await getDocs(q);
+              if (!s.empty) {
+                targetId = s.docs[0].id;
+                targetData = s.docs[0].data();
+                break;
+              }
+            }
+            if (!targetId) throw "User not found";
+          }
+          await runTransaction(db, async (t) => {
+            const ref = doc(db, "users", targetId);
+            const snap = await t.get(ref);
+            t.update(ref, { balance: Number(snap.data().balance || 0) + amt });
+          });
+          const txnId = Date.now().toString();
+          const nowDate = new Date();
+          await addDoc(collection(db, "transactions"), {
+            fromUid: uid,
+            toUid: targetId,
+            fromName: "SPS MANAGER - " + userData.fullName,
+            toName: targetData.fullName,
+            fromAccount: userData.accountNumber,
+            toAccount: targetData.accountNumber,
+            amount: amt,
+            type: "topup",
+            remark,
+            txnId,
+            participants: [uid, targetId],
+            createdAt: nowDate,
+          });
+          document.getElementById("managerModal").style.display = "none";
+          lastReceipt = {
+            amount: amt,
+            fromName: "SPS MANAGER",
+            fromAcct: userData.accountNumber,
+            toName: targetData.fullName,
+            toAcct: targetData.accountNumber,
+            remark,
+            bank: "SPS BANK",
+            txn: txnId,
+            dateStr: nowDate.toLocaleString(),
+          };
+          document.getElementById("receiptPreview").innerHTML =
+            renderReceiptHTML(lastReceipt);
+          document.getElementById("receiptPreview").style.display = "block";
+          document.getElementById("successText").innerText =
+            `₦${amt.toLocaleString()} funded ✅`;
+          document.getElementById("successPop").style.display = "flex";
+          if (isSelf) {
+            userData.balance += amt;
+            document.getElementById("bal").innerText = Number(
+              userData.balance,
+            ).toLocaleString();
+          }
+          loadAllUsers();
+        } catch (e) {
+          alert(e.message || e);
+        }
+      };
+      window.loadAllUsers = async () => {
+        const box = document.getElementById("allUsers");
+        try {
+          box.innerHTML = "Loading...";
+          const snap = await getDocs(
+            query(collection(db, "users"), where("accountNumber", "!=", "")),
+          );
+          let html = "";
+          snap.forEach((d) => {
+            const u = d.data();
+            html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><p style="color:var(--text);font-size:12px">${u.fullName}</p><p style="color:var(--muted);font-size:10px">₦${(u.balance || 0).toLocaleString()}</p></div>`;
+          });
+          box.innerHTML = html || "No users";
+        } catch (e) {
+          box.innerHTML = e.message;
+        }
+      };
+      window.closeSuccessPop = () => {
+        document.getElementById("successPop").style.display = "none";
+        document.getElementById("receiptPreview").style.display = "none";
+        document.body.style.overflow = "auto";
+      };
+      window.closeSuccess = () => {
+        closeSuccessPop();
+        load();
+      };
+      window.shareWhatsApp = () => {
+        window.open(
+          `https://wa.me/?text=${encodeURIComponent(getShareText())}`,
+          "_blank",
+        );
+      };
+      window.shareAnywhere = async () => {
+        const t = getShareText();
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: "SPS BANK Receipt", text: t });
+          } catch (e) {}
+        } else {
+          navigator.clipboard.writeText(t);
+          alert("Copied masked receipt!");
+        }
+      };
+      load();
+      const topPic = document.getElementById("topPic"),
+        picInput = document.getElementById("picInput");
+      if (topPic) {
+        topPic.onclick = () => picInput.click();
+        picInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = async (ev) => {
+            topPic.src = ev.target.result;
+            await updateDoc(doc(db, "users", uid), {
+              profilePic: ev.target.result,
+            });
+            alert("Profile updated ✅");
+          };
+          reader.readAsDataURL(file);
+        };
+      }
+      // AUTO POP ACCOUNT NAME AFTER 4 DIGITS
+      let typingTimer;
+      let allUsersCache = [];
+      let recentContactIds = new Set(); // <-- ADD THIS
+      (async () => {
+        try {
+          const snap = await getDocs(collection(db, "users"));
+          snap.forEach((d) => allUsersCache.push({ id: d.id, ...d.data() }));
+        } catch (e) {}
+      })();
+
+      document.getElementById("sendAccount").addEventListener("input", (e) => {
+        clearTimeout(typingTimer);
+        const val = e.target.value.trim().replace(/\D/g, "");
+        const box = document.getElementById("acctSuggestion");
+        if (!val) {
+          box.style.display = "none";
+          document.getElementById("recipientName").style.display = "none";
+          return;
+        }
+
+        // ONLY RECENT CONTACTS
+        if (allUsersCache.length && recentContactIds.size > 0) {
+          const noZero = val.startsWith("0") ? val.substring(1) : val;
+          const matches = allUsersCache
+            .filter((u) => {
+              if (!recentContactIds.has(u.id)) return false; // <--- KEY LINE: only people you transacted with
+              const acc = (u.accountNumber || "").toString();
+              return acc.includes(val) || acc.includes(noZero);
+            })
+            .slice(0, 5);
+
+          if (matches.length) {
+            box.innerHTML = matches
+              .map(
+                (u) =>
+                  `<div onclick="document.getElementById('sendAccount').value='${u.accountNumber}';document.getElementById('acctSuggestion').style.display='none';checkAccount()" style="padding:12px;border-bottom:1px solid var(--border);cursor:pointer"><p style="font-size:12px;font-weight:700">${u.fullName}</p><p style="font-size:10px">${maskAccount(u.accountNumber)} • Recent</p></div>`,
+              )
+              .join("");
+            box.style.display = "block";
+          } else {
+            box.style.display = "none"; // Don't show random users
+          }
+        }
+
+        if (val.length >= 3) {
+          typingTimer = setTimeout(() => checkAccount(), 100);
+        }
+      });
+    </script>
+  </body>
+</html>

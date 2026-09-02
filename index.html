@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>SPS BANK</title>
+  </head>
+  <body>
+    <script>
+      document.body.setAttribute(
+        "data-theme",
+        localStorage.getItem("kretos_theme") || "dark",
+      );
+    </script>
+    <div class="phone">
+      <!-- TOP BAR -->
+      <div
+        style="
+          padding: 22px 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div style="display: flex; gap: 10px; align-items: center">
+          <div
+            style="
+              width: 36px;
+              height: 36px;
+              background: white;
+              color: black;
+              border-radius: 10px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: 800;
+              font-size: 18px;
+            "
+          >
+            S
+          </div>
+          <b style="letter-spacing: -0.5px; font-size: 14px">SPS BANK</b>
+        </div>
+        <div style="color: #444; font-size: 12px">SECURE • 1997</div>
+      </div>
+
+      <!-- HERO TEXT -->
+      <div class="header">
+        <h1
+          style="
+            font-size: 52px;
+            line-height: 0.88;
+            letter-spacing: -3px;
+            margin: 10px 0 0 0;
+            font-weight: 800;
+          "
+        >
+          Money,<br />
+          <span style="color: #00e676">private.</span><br />
+          Money,<br />
+          secure.
+        </h1>
+        <p
+          style="
+            color: #6b6b6e;
+            margin-top: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+            max-width: 300px;
+          "
+        >
+          A wallet that feels like a bank vault. Face ID, instant receipts, zero
+          noise.
+        </p>
+      </div>
+
+      <!-- INFO CARDS -->
+      <div style="margin: 30px 20px 0 20px; display: flex; gap: 12px">
+        <div class="glass" style="flex: 1">
+          <p
+            style="
+              margin: 0;
+              color: #666;
+              font-size: 10px;
+              letter-spacing: 1.2px;
+            "
+          >
+            SECURITY
+          </p>
+          <p style="margin: 10px 0 0 0; font-weight: 700; font-size: 14px">
+            Face ID + PIN
+          </p>
+        </div>
+        <div class="glass" style="flex: 1">
+          <p
+            style="
+              margin: 0;
+              color: #666;
+              font-size: 10px;
+              letter-spacing: 1.2px;
+            "
+          >
+            RECEIPT
+          </p>
+          <p style="margin: 10px 0 0 0; font-weight: 700; font-size: 14px">
+            TXN ID + PDF
+          </p>
+        </div>
+      </div>
+
+      <div style="height: 40px"></div>
+
+      <!-- BUTTONS - NOW AT BOTTOM BUT NOT OVERLAPPING -->
+      <div class="footer-actions">
+        <button class="btn-primary" onclick="location.href = 'signup.html'">
+          Create Wallet — OTP once
+        </button>
+        <button
+          style="
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            color: #666;
+            border: 1px solid #1a1a1a;
+            border-radius: 16px;
+            font-weight: 600;
+            margin-top: 12px;
+          "
+          onclick="location.href = 'login.html'"
+        >
+          I have a wallet → Login
+        </button>
+        <p
+          style="
+            text-align: center;
+            color: #333;
+            font-size: 11px;
+            margin-top: 16px;
+            letter-spacing: 1px;
+          "
+        >
+          SPS © 1997 • BUILT FOR SPEED
+        </p>
+      </div>
+    </div>
+    <script>
+// REMOVE NETLIFY BADGE
+const style = document.createElement('style');
+style.innerHTML = `
+  div[style*="fixed"][style*="bottom"] { display: none !important; }
+  a[href*="netlify.com"] div { display: none !important; }
+`;
+document.head.appendChild(style);
+
+setInterval(() => {
+  document.querySelectorAll('div').forEach(el => {
+    if (el.textContent.includes('Powered by Netlify')) {
+      el.parentElement.style.display = 'none';
+      el.style.display = 'none';
+    }
+  });
+}, 500);
+</script>
+  </body>
+</html>

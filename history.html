@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>History - SPS BANK</title>
+    <style>
+      body {
+        background: #000;
+        color: #fff;
+        font-family: Arial;
+        margin: 0;
+      }
+      .header {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #111;
+        border-bottom: 1px solid #222;
+        position: sticky;
+        top: 0;
+      }
+      .tx {
+        background: #151518;
+        border: 1px solid #222;
+        border-radius: 14px;
+        padding: 14px;
+        margin: 10px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+      }
+      .tx:active {
+        transform: scale(0.98);
+        background: #1e1e22;
+      }
+      .filter {
+        display: flex;
+        gap: 8px;
+        padding: 12px 16px;
+        overflow: auto;
+      }
+      .f {
+        padding: 8px 14px;
+        border-radius: 20px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #888;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .f.active {
+        background: #00e676;
+        color: #000;
+        border-color: #00e676;
+        font-weight: 800;
+      }
+      #receiptModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .receipt-box {
+        background: #fff;
+        color: #000;
+        border-radius: 18px;
+        max-width: 380px;
+        width: 100%;
+        padding: 20px;
+        max-height: 90vh;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        max-width: 420px;
+        margin: 0 auto;
+        background: #000;
+        min-height: 100vh;
+      "
+    >
+      <div class="header">
+        <div
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 36px;
+            height: 36px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          "
+        >
+          ←
+        </div>
+        <p style="font-weight: 800">Transaction History</p>
+      </div>
+
+      <div class="filter">
+        <div class="f active" onclick="filterTx('all', this)">All</div>
+        <div class="f" onclick="filterTx('sent', this)">Sent</div>
+        <div class="f" onclick="filterTx('received', this)">Received</div>
+        <div class="f" onclick="filterTx('bill', this)">Bills</div>
+      </div>
+
+      <div id="txList">
+        <p style="color: #555; text-align: center; margin-top: 30px">
+          Loading...
+        </p>
+      </div>
+    </div>
+
+    <!-- RECEIPT POPUP -->
+    <div id="receiptModal">
+      <div class="receipt-box">
+        <div id="receiptContent"></div>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 14px;
+          "
+        >
+          <button
+            onclick="shareWhatsApp()"
+            style="
+              padding: 12px;
+              border-radius: 10px;
+              border: 0;
+              background: #25d366;
+              color: #fff;
+              font-weight: 700;
+            "
+          >
+            WhatsApp
+          </button>
+          <button
+            onclick="closeReceipt()"
+            style="
+              padding: 12px;
+              border-radius: 10px;
+              border: 0;
+              background: #000;
+              color: #fff;
+              font-weight: 700;
+            "
+          >
+            Back to Wallet
+          </button>
+        </div>
+        <button
+          onclick="closeReceipt()"
+          style="
+            width: 100%;
+            margin-top: 8px;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #000;
+          "
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      const uid =
+        localStorage.getItem("uid") || localStorage.getItem("kretos_uid");
+      if (!uid) location.href = "login.html";
+      let allTx = [];
+      let currentFilter = "all";
+      let lastReceipt = null;
+
+      async function load() {
+        const q = query(
+          collection(db, "transactions"),
+          where("participants", "array-contains", uid),
+        );
+        const snap = await getDocs(q);
+        let arr = [];
+        snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+        arr.sort((a, b) => {
+          const at = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bt = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bt - at;
+        });
+        allTx = arr;
+        render();
+      }
+
+      function render() {
+        const list = document.getElementById("txList");
+        let filtered = allTx;
+        if (currentFilter === "sent")
+          filtered = allTx.filter((t) => t.fromUid === uid);
+        if (currentFilter === "received")
+          filtered = allTx.filter((t) => t.toUid === uid);
+        if (currentFilter === "bill")
+          filtered = allTx.filter((t) => t.type === "bill");
+
+        if (filtered.length === 0) {
+          list.innerHTML =
+            '<p style="color:#555;text-align:center;margin-top:30px">No transactions</p>';
+          return;
+        }
+
+        let html = "";
+        filtered.forEach((t, i) => {
+          const isOut = t.fromUid === uid;
+          const date = t.createdAt?.toDate
+            ? t.createdAt.toDate().toLocaleDateString()
+            : "";
+          const originalIndex = allTx.indexOf(t);
+          html += `<div class="tx" onclick="showReceipt(${originalIndex})"><div><p style="font-size:14px;font-weight:700;color:#fff">${isOut ? "Sent to " : "Received from "}${isOut ? t.toName : t.fromName}</p><p style="font-size:11px;color:#888">${t.toAccount || t.fromAccount || ""} • ${date} • ${t.type || "transfer"}</p></div><p style="color:${isOut ? "#ff5555" : "#00e676"};font-weight:800">${isOut ? "-" : "+"}₦${Number(t.amount).toLocaleString()}</p></div>`;
+        });
+        list.innerHTML = html;
+      }
+
+      window.filterTx = (type, el) => {
+        currentFilter = type;
+        document
+          .querySelectorAll(".f")
+          .forEach((f) => f.classList.remove("active"));
+        el.classList.add("active");
+        render();
+      };
+
+      window.showReceipt = (index) => {
+        const t = allTx[index];
+        let d = t.createdAt;
+        let dateStr = "";
+        try {
+          dateStr = d?.toDate
+            ? d.toDate().toLocaleString()
+            : new Date().toLocaleString();
+        } catch (e) {
+          dateStr = new Date().toLocaleString();
+        }
+
+        lastReceipt = {
+          txn: t.txnId || t.id,
+          dateStr: dateStr,
+          amount: t.amount,
+          fromName: t.fromName,
+          fromAcct: t.fromAccount,
+          fromEmail: t.fromEmail || "",
+          toName: t.toName,
+          toAcct: t.toAccount,
+          toEmail: t.toEmail || "",
+          remark: t.remark || t.type || "Transfer",
+        };
+
+        document.getElementById("receiptContent").innerHTML = `
+    <div style="text-align:center;border-bottom:1px dashed #ccc;padding-bottom:12px;margin-bottom:12px">
+      <div style="width:50px;height:50px;background:#00e676;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;margin:0 auto">S</div>
+      <h3 style="margin:8px 0 2px">SPS BANK</h3>
+      <p style="font-size:11px;color:#666">${t.type === "bill" ? "Bill Payment Receipt" : "Transaction Receipt"}</p>
+      <p style="font-size:10px;color:#00e676;font-weight:700;margin-top:4px">✓ SUCCESSFUL</p>
+    </div>
+    <div style="font-size:12px;line-height:1.8">
+      <div style="display:flex;justify-content:space-between"><span style="color:#888">Transaction ID:</span><span style="font-weight:700">${lastReceipt.txn}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:#888">Date:</span><span>${lastReceipt.dateStr}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:#888">Amount:</span><span style="font-weight:900;color:#00a651">₦${Number(lastReceipt.amount).toLocaleString()}</span></div>
+      <hr style="border:0;border-top:1px dashed #ddd;margin:10px 0">
+      <div style="display:flex;justify-content:space-between"><span style="color:#888">From:</span><span style="font-weight:700">${lastReceipt.fromName}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:#888">From Acct:</span><span>${lastReceipt.fromAcct}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:#888">To:</span><span style="font-weight:700">${lastReceipt.toName}</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:#888">To Acct:</span><span>${lastReceipt.toAcct}</span></div>
+      <hr style="border:0;border-top:1px dashed #ddd;margin:10px 0">
+      <p style="text-align:center;font-size:11px;color:#888;margin-top:8px">Thank you for banking with us - SPS Team 💚</p>
+    </div>
+  `;
+        document.getElementById("receiptModal").style.display = "flex";
+      };
+
+      window.closeReceipt = () => {
+        document.getElementById("receiptModal").style.display = "none";
+      };
+      window.shareWhatsApp = () => {
+        if (!lastReceipt) return;
+        const text = `*SPS BANK RECEIPT*%0A%0ATxn: ${lastReceipt.txn}%0AAmount: ₦${lastReceipt.amount}%0AFrom: ${lastReceipt.fromName}%0ATo: ${lastReceipt.toName}%0ADate: ${lastReceipt.dateStr}%0A%0AThank you for banking with us - SPS Team 💚`;
+        window.open(`https://wa.me/?text=${text}`, "_blank");
+      };
+
+      load();
+    </script>
+  </body>
+</html>

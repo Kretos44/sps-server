@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Refer & Earn</title>
+  </head>
+  <body>
+    <script>
+      document.body.setAttribute(
+        "data-theme",
+        localStorage.getItem("kretos_theme") || "dark",
+      );
+    </script>
+    <div class="phone" style="padding: 20px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 36px;
+            height: 36px;
+            background: #151518;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+          "
+        >
+          ←
+        </div>
+        <h3 style="color: #fff">Refer & Earn</h3>
+      </div>
+      <div
+        style="
+          background: linear-gradient(135deg, #00e676, #00b86a);
+          border-radius: 20px;
+          padding: 20px;
+          margin-top: 20px;
+          text-align: center;
+        "
+      >
+        <h1 style="color: #000">₦200</h1>
+        <p style="color: #000; font-size: 13px">
+          Per referral when they sign up
+        </p>
+      </div>
+      <div
+        style="
+          background: #151518;
+          border-radius: 16px;
+          padding: 16px;
+          margin-top: 16px;
+        "
+      >
+        <p style="color: #888; font-size: 11px">YOUR REFERRAL CODE</p>
+        <h2
+          id="refCode"
+          style="color: #00e676; letter-spacing: 2px; margin-top: 6px"
+        >
+          ...
+        </h2>
+        <p
+          style="color: #666; font-size: 11px; margin-top: 8px"
+          id="refLink"
+        ></p>
+        <button
+          onclick="shareRef()"
+          style="
+            width: 100%;
+            margin-top: 12px;
+            background: #fff;
+            color: #000;
+            padding: 14px;
+            border-radius: 12px;
+            border: 0;
+            font-weight: 700;
+          "
+        >
+          Share Link
+        </button>
+      </div>
+      <div
+        style="
+          background: #151518;
+          border-radius: 16px;
+          padding: 16px;
+          margin-top: 12px;
+        "
+      >
+        <p style="color: #fff">
+          My Referrals: <span id="refCount" style="color: #00e676">0</span>
+        </p>
+        <p style="color: #888; font-size: 11px; margin-top: 4px">
+          Total Earned: ₦<span id="refEarn">0</span>
+        </p>
+        <div id="refList" style="margin-top: 12px"></div>
+      </div>
+    </div>
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        doc,
+        getDoc,
+        query,
+        where,
+        getDocs,
+        updateDoc,
+        collection,
+        addDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const uid = localStorage.getItem("uid");
+      const snap = await getDoc(doc(db, "users", uid));
+      let u = snap.data();
+      if (!u.referralCode) {
+        const code = "KRETOS" + uid.slice(0, 5).toUpperCase();
+        await updateDoc(doc(db, "users", uid), { referralCode: code });
+        u.referralCode = code;
+      }
+      document.getElementById("refCode").innerText = u.referralCode;
+      const link =
+        window.location.origin + "/signup.html?ref=" + u.referralCode;
+      document.getElementById("refLink").innerText = link;
+      const q = query(
+        collection(db, "users"),
+        where("referredBy", "==", u.referralCode),
+      );
+      const rs = await getDocs(q);
+      document.getElementById("refCount").innerText = rs.size;
+      document.getElementById("refEarn").innerText = (
+        rs.size * 200
+      ).toLocaleString();
+      let html = "";
+      rs.forEach((d) => {
+        const x = d.data();
+        html += `<div style="padding:8px 0;border-bottom:1px solid #222;display:flex;justify-content:space-between"><p style="color:#fff;font-size:12px">${x.fullName}</p><p style="color:#00e676;font-size:11px">+₦200</p></div>`;
+      });
+      document.getElementById("refList").innerHTML =
+        html ||
+        '<p style="color:#555;font-size:11px">No referrals yet - Share now!</p>';
+      window.shareRef = async () => {
+        if (navigator.share) {
+          await navigator.share({
+            title: "Join KRETOS",
+            text: `Join KRETOS Secure Vault and we both earn! Use my code ${u.referralCode}`,
+            url: link,
+          });
+        } else {
+          navigator.clipboard.writeText(link);
+          alert("Link copied!");
+        }
+      };
+      // auto credit check
+      if (rs.size > 0 && !u.referralCredited) {
+        /* credit logic handled in signup - see note */
+      }
+    </script>
+  </body>
+</html>

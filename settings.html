@@ -1,0 +1,900 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Settings - KRETOS</title>
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --card: #151518;
+        --text: #fff;
+        --green: #00e676;
+        --muted: #666;
+      }
+      body[data-theme="blue"] {
+        --bg: #0a0f1a;
+        --card: #141e2e;
+        --text: #e0f0ff;
+        --green: #3b82f6;
+        --muted: #7aa0c8;
+      }
+      body[data-theme="purple"] {
+        --bg: #120a1a;
+        --card: #1e1430;
+        --text: #f0e0ff;
+        --green: #a855f7;
+        --muted: #9a7ab8;
+      }
+      body[data-theme="orange"] {
+        --bg: #1a100a;
+        --card: #2a1e14;
+        --text: #ffe0b0;
+        --green: #ff8c00;
+        --muted: #a08050;
+      }
+      body[data-theme="light"] {
+        --bg: #f5f5f7;
+        --card: #ffffff;
+        --text: #000;
+        --green: #00b86a;
+        --muted: #888;
+      }
+      .phone {
+        background: var(--bg) !important;
+      }
+      .item {
+        background: var(--card) !important;
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      .item small {
+        color: var(--muted);
+        font-size: 11px;
+        display: block;
+        margin-top: 2px;
+      }
+      .item p {
+        color: var(--text) !important;
+      }
+      .sheet {
+        background: #121214;
+        border-radius: 28px 28px 0 0;
+        width: 100%;
+        max-width: 420px;
+        padding: 24px;
+        max-height: 85vh;
+        overflow: auto;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        display: none;
+        align-items: end;
+        justify-content: center;
+        z-index: 99;
+      }
+      .toggle {
+        width: 44px;
+        height: 26px;
+        background: #333;
+        border-radius: 20px;
+        position: relative;
+        transition: 0.3s;
+        cursor: pointer;
+      }
+      .toggle.on {
+        background: var(--green);
+      }
+      .toggle::after {
+        content: "";
+        width: 20px;
+        height: 20px;
+        background: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        transition: 0.3s;
+      }
+      .toggle.on::after {
+        left: 21px;
+      }
+      .theme-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 3px solid transparent;
+      }
+      .theme-dot.active {
+        border-color: var(--green);
+        transform: scale(1.1);
+      }
+      .edit-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 28px;
+        height: 28px;
+        background: var(--green);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #000;
+        font-weight: 800;
+        font-size: 14px;
+        border: 2px solid var(--bg);
+      }
+      .input-dark {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+        margin-top: 10px;
+        box-sizing: border-box;
+      }
+      .label {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 12px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      document.body.setAttribute(
+        "data-theme",
+        localStorage.getItem("kretos_theme") || "dark",
+      );
+    </script>
+    <div class="phone">
+      <div style="padding: 20px; display: flex; align-items: center; gap: 12px">
+        <div
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 36px;
+            height: 36px;
+            background: var(--card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text);
+          "
+        >
+          ←
+        </div>
+        <h3 style="color: var(--text)">Settings</h3>
+      </div>
+      <div style="padding: 0 20px 20px">
+        <!-- TOP PROFILE -->
+        <div
+          style="
+            background: var(--card);
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+          "
+        >
+          <div style="position: relative">
+            <img
+              id="setPic"
+              style="
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                object-fit: cover;
+                background: #222;
+                border: 2px solid var(--green);
+              "
+            />
+            <div
+              class="edit-badge"
+              onclick="document.getElementById('picFile').click()"
+            >
+              ✎
+            </div>
+          </div>
+          <input type="file" id="picFile" hidden accept="image/*" />
+          <div style="flex: 1">
+            <p id="setName" style="color: var(--text); font-weight: 700">...</p>
+            <p id="setEmail" style="color: var(--muted); font-size: 11px"></p>
+            <p
+              id="setAcct"
+              style="color: var(--green); font-size: 11px; margin-top: 2px"
+            ></p>
+          </div>
+          <button
+            onclick="document.getElementById('picFile').click()"
+            style="
+              background: var(--bg);
+              color: var(--text);
+              border: 1px solid var(--green);
+              padding: 6px 12px;
+              border-radius: 20px;
+              font-size: 10px;
+            "
+          >
+            Change
+          </button>
+        </div>
+
+        <!-- NEW: PERSONAL INFORMATION PROFILE INSIDE SETTINGS -->
+        <h4 style="color: var(--muted); font-size: 12px; margin: 20px 0 10px">
+          PERSONAL INFORMATION
+        </h4>
+        <div
+          class="item"
+          style="flex-direction: column; align-items: stretch; cursor: default"
+        >
+          <div style="text-align: center; margin-bottom: 10px">
+            <p style="color: var(--green); font-size: 22px; font-weight: 800">
+              ₦<span id="balShow">0</span>
+            </p>
+            <p style="color: var(--muted); font-size: 10px">Current Balance</p>
+          </div>
+          <label class="label">Full Name</label>
+          <input
+            id="fullNameInput"
+            class="input-dark"
+            placeholder="Full Name"
+          />
+          <label class="label">Email Address</label>
+          <input
+            id="emailInput"
+            class="input-dark"
+            placeholder="Email"
+            disabled
+            style="opacity: 0.6"
+          />
+          <label class="label">Phone Number</label>
+          <input id="phoneInput" class="input-dark" placeholder="Phone" />
+          <label class="label">Account Number (Phone without 0)</label>
+          <input
+            id="accountInput"
+            class="input-dark"
+            disabled
+            style="opacity: 0.6"
+          />
+          <label class="label">Account Type / Member Since</label>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+              margin-top: 8px;
+            "
+          >
+            <div
+              style="
+                background: var(--bg);
+                border-radius: 12px;
+                padding: 10px;
+                text-align: center;
+              "
+            >
+              <p style="color: var(--muted); font-size: 10px">Type</p>
+              <p style="font-size: 12px; font-weight: 700; color: var(--text)">
+                SPS Savings
+              </p>
+            </div>
+            <div
+              style="
+                background: var(--bg);
+                border-radius: 12px;
+                padding: 10px;
+                text-align: center;
+              "
+            >
+              <p style="color: var(--muted); font-size: 10px">Member Since</p>
+              <p
+                style="font-size: 11px; font-weight: 700; color: var(--text)"
+                id="memberSince"
+              >
+                ...
+              </p>
+            </div>
+          </div>
+          <button
+            onclick="saveProfileInfo()"
+            style="
+              width: 100%;
+              margin-top: 14px;
+              background: var(--green);
+              color: #000;
+              padding: 14px;
+              border-radius: 12px;
+              border: 0;
+              font-weight: 800;
+              cursor: pointer;
+            "
+          >
+            💾 Save Profile
+          </button>
+        </div>
+
+        <h4 style="color: var(--muted); font-size: 12px; margin: 20px 0 10px">
+          APPEARANCE
+        </h4>
+        <div class="item" onclick="openTheme()">
+          <div>
+            <p style="font-size: 14px">🎨 Theme</p>
+            <small id="themeNow">Dark - KRETOS Green</small>
+          </div>
+          <span style="color: var(--muted)">›</span>
+        </div>
+
+        <h4 style="color: var(--muted); font-size: 12px; margin: 20px 0 10px">
+          SECURITY & KYC
+        </h4>
+        <div class="item">
+          <div>
+            <p style="font-size: 14px">👁️ Face ID Login</p>
+            <small>Login with your face</small>
+          </div>
+          <div id="faceToggle" class="toggle" onclick="toggleFace()"></div>
+        </div>
+        <div class="item" onclick="openKYC()">
+          <div>
+            <p style="font-size: 14px">🪪 NIN / BVN Verification</p>
+            <small id="kycStatus">Not verified - Tap to add</small>
+          </div>
+          <span style="color: var(--muted)">›</span>
+        </div>
+        <div class="item" onclick="openPin()">
+          <div>
+            <p style="font-size: 14px">🔒 Change Transaction PIN</p>
+            <small>Update your 6-digit PIN</small>
+          </div>
+          <span style="color: var(--muted)">›</span>
+        </div>
+        <div class="item" onclick="location.href = 'face.html'">
+          <div>
+            <p style="font-size: 14px">📸 Setup Face ID</p>
+            <small>Register your face</small>
+          </div>
+          <span style="color: var(--muted)">›</span>
+        </div>
+
+        <h4 style="color: var(--muted); font-size: 12px; margin: 20px 0 10px">
+          SUPPORT
+        </h4>
+        <div class="item" onclick="openReport()">
+          <div>
+            <p style="font-size: 14px">📢 Report Issue to Admin</p>
+            <small>Failed transaction, emergency</small>
+          </div>
+          <span style="color: #ff5555">⚠️</span>
+        </div>
+        <div class="item" onclick="openReportsList()">
+          <div>
+            <p style="font-size: 14px">📋 My Reports</p>
+            <small id="reportCount">0 reports</small>
+          </div>
+          <span style="color: var(--muted)">›</span>
+        </div>
+
+        <h4 style="color: var(--muted); font-size: 12px; margin: 20px 0 10px">
+          ACCOUNT
+        </h4>
+        <div class="item" onclick="logout()">
+          <div>
+            <p style="color: #ff5555; font-size: 14px">🚪 Logout</p>
+            <small>Sign out</small>
+          </div>
+        </div>
+        <p
+          style="
+            text-align: center;
+            color: #333;
+            font-size: 10px;
+            margin-top: 20px;
+          "
+        >
+          KRETOS v2.0 • Secure Vault
+        </p>
+      </div>
+    </div>
+
+    <div id="themeModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: #fff">Choose Theme 🎨</h3>
+        <p style="color: #666; font-size: 11px; margin-top: 4px">
+          Changes full app color instantly
+        </p>
+        <div style="margin-top: 16px">
+          <p style="color: #888; font-size: 11px; margin-bottom: 8px">COLORS</p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap">
+            <div
+              class="theme-dot active"
+              data-theme="dark"
+              style="background: #0a0a0a; border: 1px solid #333"
+              onclick="setTheme('dark', this)"
+            ></div>
+            <div
+              class="theme-dot"
+              data-theme="green"
+              style="background: #00e676"
+              onclick="setTheme('green', this)"
+            ></div>
+            <div
+              class="theme-dot"
+              data-theme="blue"
+              style="background: #3b82f6"
+              onclick="setTheme('blue', this)"
+            ></div>
+            <div
+              class="theme-dot"
+              data-theme="purple"
+              style="background: #a855f7"
+              onclick="setTheme('purple', this)"
+            ></div>
+            <div
+              class="theme-dot"
+              data-theme="orange"
+              style="background: #ff8c00"
+              onclick="setTheme('orange', this)"
+            ></div>
+            <div
+              class="theme-dot"
+              data-theme="light"
+              style="background: #fff; border: 1px solid #ddd"
+              onclick="setTheme('light', this)"
+            ></div>
+          </div>
+        </div>
+        <button
+          onclick="closeMods()"
+          style="
+            width: 100%;
+            margin-top: 20px;
+            background: #2a2a2e;
+            color: #fff;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+          "
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <div id="kycModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: #fff">KYC Verification</h3>
+        <input
+          id="nin"
+          class="input-dark"
+          placeholder="NIN - 11 digits"
+          maxlength="11"
+          style="margin-top: 14px"
+        /><input
+          id="bvn"
+          class="input-dark"
+          placeholder="BVN - 11 digits"
+          maxlength="11"
+        /><input
+          id="dob"
+          class="input-dark"
+          placeholder="DOB - DD/MM/YYYY"
+        /><button
+          onclick="saveKYC()"
+          class="btn-green"
+          style="
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+            background: #00e676;
+            font-weight: 700;
+          "
+        >
+          Save & Verify</button
+        ><button
+          onclick="closeMods()"
+          style="
+            width: 100%;
+            margin-top: 8px;
+            background: #2a2a2e;
+            color: #fff;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+          "
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <div id="pinModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: #fff">Change PIN</h3>
+        <input
+          id="oldPin"
+          class="input-dark"
+          placeholder="Old PIN"
+          type="password"
+          maxlength="6"
+          style="margin-top: 14px"
+        />
+        <div style="position: relative">
+          <input
+            id="newPin"
+            class="input-dark"
+            placeholder="New PIN"
+            type="password"
+            maxlength="6"
+            style="width: 100%"
+          /><span
+            onclick="togglePinEye('newPin', this)"
+            style="
+              position: absolute;
+              right: 14px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+            >👁️</span
+          >
+        </div>
+        <input
+          id="confirmPin"
+          class="input-dark"
+          placeholder="Confirm New PIN"
+          type="password"
+          maxlength="6"
+        /><button
+          onclick="savePin()"
+          class="btn-green"
+          style="
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+            background: #00e676;
+            font-weight: 700;
+          "
+        >
+          Update PIN</button
+        ><button
+          onclick="closeMods()"
+          style="
+            width: 100%;
+            margin-top: 8px;
+            background: #2a2a2e;
+            color: #fff;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+          "
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <div id="reportModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: #fff">Report to Admin 🚨</h3>
+        <select id="reportType" class="input-dark" style="margin-top: 14px">
+          <option>Failed Transaction</option>
+          <option>Money Not Received</option>
+          <option>Wrong Transfer</option>
+          <option>Account Hacked</option>
+          <option>Feedback</option>
+          <option>Other</option></select
+        ><input
+          id="reportTxn"
+          class="input-dark"
+          placeholder="Transaction ID"
+        /><textarea
+          id="reportMsg"
+          class="input-dark"
+          placeholder="Describe issue..."
+          style="height: 100px"
+        ></textarea
+        ><button
+          onclick="sendReport()"
+          class="btn-green"
+          style="
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+            background: #00e676;
+            font-weight: 700;
+          "
+        >
+          Send Report</button
+        ><button
+          onclick="closeMods()"
+          style="
+            width: 100%;
+            margin-top: 8px;
+            background: #2a2a2e;
+            color: #fff;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+          "
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <div id="reportsListModal" class="modal">
+      <div class="sheet">
+        <h3 style="color: #fff">My Reports</h3>
+        <div
+          id="reportsList"
+          style="margin-top: 14px; max-height: 300px; overflow: auto"
+        ></div>
+        <button
+          onclick="closeMods()"
+          style="
+            width: 100%;
+            margin-top: 14px;
+            background: #2a2a2e;
+            color: #fff;
+            padding: 14px;
+            border-radius: 14px;
+            border: 0;
+          "
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        doc,
+        getDoc,
+        updateDoc,
+        collection,
+        addDoc,
+        query,
+        where,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const uid =
+        localStorage.getItem("uid") || localStorage.getItem("kretos_uid");
+      if (!uid) location.href = "login.html";
+      let userData = null;
+
+      const saved = localStorage.getItem("kretos_theme") || "dark";
+      document.body.setAttribute("data-theme", saved);
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.setAttribute("data-theme", saved);
+      });
+
+      async function load() {
+        const snap = await getDoc(doc(db, "users", uid));
+        if (!snap.exists()) return (location.href = "login.html");
+        userData = snap.data();
+        document.getElementById("setName").innerText = userData.fullName;
+        document.getElementById("setEmail").innerText = userData.email;
+        document.getElementById("setAcct").innerText =
+          "Acct: " + userData.accountNumber;
+        document.getElementById("setPic").src =
+          userData.profilePic ||
+          userData.facePhoto ||
+          "https://via.placeholder.com/50/222/666?text=K";
+        // NEW PROFILE FIELDS
+        document.getElementById("fullNameInput").value =
+          userData.fullName || "";
+        document.getElementById("emailInput").value = userData.email || "";
+        document.getElementById("phoneInput").value = userData.phone || "";
+        document.getElementById("accountInput").value =
+          userData.accountNumber || "";
+        document.getElementById("balShow").innerText = Number(
+          userData.balance || 0,
+        ).toLocaleString();
+        if (userData.createdAt && userData.createdAt.toDate) {
+          document.getElementById("memberSince").innerText = userData.createdAt
+            .toDate()
+            .toLocaleDateString();
+        } else {
+          document.getElementById("memberSince").innerText =
+            new Date().toLocaleDateString();
+        }
+
+        if (userData.nin) {
+          document.getElementById("kycStatus").innerHTML =
+            `<span style="color:#00e676">Verified • NIN: ****${userData.nin.slice(-4)}</span>`;
+          document.getElementById("nin").value = userData.nin;
+          document.getElementById("bvn").value = userData.bvn || "";
+          document.getElementById("dob").value = userData.dob || "";
+        }
+        document.getElementById("themeNow").innerText =
+          saved.charAt(0).toUpperCase() + saved.slice(1) + " Theme";
+        document.querySelectorAll(".theme-dot").forEach((d) => {
+          if (d.dataset.theme === saved) d.classList.add("active");
+          else d.classList.remove("active");
+        });
+        const faceOn =
+          localStorage.getItem("faceIdEnabled") === "true" ||
+          userData.faceEnabled;
+        if (faceOn) document.getElementById("faceToggle").classList.add("on");
+        const rq = query(collection(db, "reports"), where("uid", "==", uid));
+        const rs = await getDocs(rq);
+        document.getElementById("reportCount").innerText = rs.size + " reports";
+      }
+      load();
+
+      document.getElementById("picFile").onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024)
+          return alert("Image too big, use <2MB");
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const img = ev.target.result;
+          document.getElementById("setPic").src = img;
+          try {
+            await updateDoc(doc(db, "users", uid), { profilePic: img });
+            alert("✅ Profile photo updated! Will show in wallet too");
+          } catch (err) {
+            alert("Upload failed: " + err.message);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      window.saveProfileInfo = async () => {
+        const newName = document.getElementById("fullNameInput").value.trim();
+        const newPhone = document.getElementById("phoneInput").value.trim();
+        if (!newName || !newPhone) return alert("Fill name and phone");
+        try {
+          const cleanPhone = newPhone.replace(/\D/g, "");
+          const newAcct = cleanPhone.startsWith("0")
+            ? cleanPhone.substring(1)
+            : cleanPhone;
+          await updateDoc(doc(db, "users", uid), {
+            fullName: newName,
+            phone: newPhone,
+            accountNumber: newAcct,
+          });
+          alert("Profile updated ✅ New Acct: " + newAcct);
+          location.reload();
+        } catch (e) {
+          alert(e.message);
+        }
+      };
+
+      window.openTheme = () =>
+        (document.getElementById("themeModal").style.display = "flex");
+      window.openKYC = () =>
+        (document.getElementById("kycModal").style.display = "flex");
+      window.openPin = () =>
+        (document.getElementById("pinModal").style.display = "flex");
+      window.openReport = () =>
+        (document.getElementById("reportModal").style.display = "flex");
+      window.closeMods = () =>
+        document
+          .querySelectorAll(".modal")
+          .forEach((m) => (m.style.display = "none"));
+
+      window.setTheme = (t, el) => {
+        localStorage.setItem("kretos_theme", t);
+        document.body.setAttribute("data-theme", t);
+        document.getElementById("themeNow").innerText =
+          t.charAt(0).toUpperCase() + t.slice(1) + " Theme";
+        document
+          .querySelectorAll(".theme-dot")
+          .forEach((d) => d.classList.remove("active"));
+        if (el) el.classList.add("active");
+        closeMods();
+      };
+
+      window.toggleFace = async () => {
+        const toggle = document.getElementById("faceToggle");
+        const isOn = toggle.classList.contains("on");
+        if (!isOn) {
+          if (!userData.facePhoto && !userData.profilePic)
+            return alert("Setup Face ID first in Face ID page");
+          toggle.classList.add("on");
+          localStorage.setItem("faceIdEnabled", "true");
+          await updateDoc(doc(db, "users", uid), { faceEnabled: true });
+          alert("Face ID Enabled ✅");
+        } else {
+          toggle.classList.remove("on");
+          localStorage.setItem("faceIdEnabled", "false");
+          await updateDoc(doc(db, "users", uid), { faceEnabled: false });
+          alert("Face ID Disabled");
+        }
+      };
+      window.saveKYC = async () => {
+        const nin = document.getElementById("nin").value.trim();
+        const bvn = document.getElementById("bvn").value.trim();
+        const dob = document.getElementById("dob").value.trim();
+        if (nin.length != 11) return alert("11-digit NIN");
+        if (bvn.length != 11) return alert("11-digit BVN");
+        await updateDoc(doc(db, "users", uid), {
+          nin,
+          bvn,
+          dob,
+          kycVerified: true,
+        });
+        alert("KYC Verified ✅");
+        closeMods();
+        load();
+      };
+      window.savePin = async () => {
+        const oldPin = document.getElementById("oldPin").value.trim();
+        const newPin = document.getElementById("newPin").value.trim();
+        const confirmPin = document.getElementById("confirmPin").value.trim();
+        if (oldPin !== userData.pin) return alert("Old PIN wrong");
+        if (newPin !== confirmPin) return alert("No match");
+        if (newPin.length !== 6) return alert("6 digits");
+        await updateDoc(doc(db, "users", uid), { pin: newPin });
+        alert("PIN Updated ✅");
+        closeMods();
+      };
+      window.togglePinEye = (id, el) => {
+        const i = document.getElementById(id);
+        i.type = i.type === "password" ? "text" : "password";
+        el.innerText = i.type === "password" ? "👁️" : "🙈";
+      };
+      window.sendReport = async () => {
+        const type = document.getElementById("reportType").value;
+        const txn = document.getElementById("reportTxn").value.trim();
+        const msg = document.getElementById("reportMsg").value.trim();
+        if (!msg) return alert("Enter message");
+        await addDoc(collection(db, "reports"), {
+          uid,
+          userName: userData.fullName,
+          userEmail: userData.email,
+          account: userData.accountNumber,
+          type,
+          txnId: txn,
+          message: msg,
+          status: "pending",
+          createdAt: new Date(),
+        });
+        alert("Report sent ✅");
+        closeMods();
+        load();
+      };
+      window.openReportsList = async () => {
+        document.getElementById("reportsListModal").style.display = "flex";
+        const q = query(collection(db, "reports"), where("uid", "==", uid));
+        const snap = await getDocs(q);
+        let html = "";
+        if (snap.empty)
+          html = '<p style="color:#555;text-align:center">No reports</p>';
+        snap.forEach((d) => {
+          const r = d.data();
+          html += `<div style="background:var(--card);padding:12px;border-radius:12px;margin-bottom:8px"><p style="color:var(--text);font-size:13px">${r.type} <span style="font-size:9px;background:#ffaa00;color:#000;padding:2px 6px;border-radius:8px">${r.status}</span></p><p style="color:var(--muted);font-size:11px">${r.message.slice(0, 80)}</p></div>`;
+        });
+        document.getElementById("reportsList").innerHTML = html;
+      };
+      window.logout = () => {
+        if (confirm("Logout?")) {
+          localStorage.clear();
+          location.href = "login.html";
+        }
+      };
+    </script>
+  </body>
+</html>

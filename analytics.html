@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Analytics</title>
+  </head>
+  <body>
+    <script>
+      document.body.setAttribute(
+        "data-theme",
+        localStorage.getItem("kretos_theme") || "dark",
+      );
+    </script>
+    <div class="phone" style="padding: 20px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 36px;
+            height: 36px;
+            background: #151518;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+          "
+        >
+          ←
+        </div>
+        <h3 style="color: #fff">Spending Analytics</h3>
+      </div>
+      <div
+        style="
+          background: #151518;
+          border-radius: 16px;
+          padding: 16px;
+          margin-top: 20px;
+        "
+      >
+        <canvas id="chart"></canvas>
+      </div>
+      <div
+        style="
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-top: 12px;
+        "
+      >
+        <div style="background: #151518; padding: 14px; border-radius: 12px">
+          <p style="color: #888; font-size: 10px">TOTAL SENT</p>
+          <p style="color: #ff5555; font-weight: 700" id="totalSent">₦0</p>
+        </div>
+        <div style="background: #151518; padding: 14px; border-radius: 12px">
+          <p style="color: #888; font-size: 10px">TOTAL RECEIVED</p>
+          <p style="color: #00e676; font-weight: 700" id="totalRec">₦0</p>
+        </div>
+        <div style="background: #151518; padding: 14px; border-radius: 12px">
+          <p style="color: #888; font-size: 10px">BILLS</p>
+          <p style="color: #fff; font-weight: 700" id="totalBill">₦0</p>
+        </div>
+        <div style="background: #151518; padding: 14px; border-radius: 12px">
+          <p style="color: #888; font-size: 10px">CASHBACK EARNED</p>
+          <p style="color: #00e676; font-weight: 700" id="totalCash">₦0</p>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const uid = localStorage.getItem("uid");
+      const q = query(
+        collection(db, "transactions"),
+        where("participants", "array-contains", uid),
+      );
+      const snap = await getDocs(q);
+      let sent = 0,
+        rec = 0,
+        bills = 0,
+        cash = 0;
+      let months = {};
+      snap.forEach((d) => {
+        const t = d.data();
+        const m = new Date(t.createdAt?.toDate()).toLocaleString("default", {
+          month: "short",
+        });
+        if (!months[m]) months[m] = 0;
+        months[m] += t.amount;
+        if (t.fromUid === uid) {
+          sent += t.amount;
+          if (t.type === "bill") {
+            bills += t.amount;
+            cash += t.amount * 0.02;
+          }
+        } else {
+          rec += t.amount;
+        }
+      });
+      document.getElementById("totalSent").innerText =
+        "₦" + sent.toLocaleString();
+      document.getElementById("totalRec").innerText =
+        "₦" + rec.toLocaleString();
+      document.getElementById("totalBill").innerText =
+        "₦" + bills.toLocaleString();
+      document.getElementById("totalCash").innerText =
+        "₦" + cash.toLocaleString();
+      new Chart(document.getElementById("chart"), {
+        type: "bar",
+        data: {
+          labels: Object.keys(months),
+          datasets: [
+            {
+              label: "Spending",
+              data: Object.values(months),
+              backgroundColor: "#00e676",
+            },
+          ],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: "#222" }, ticks: { color: "#888" } },
+            x: { ticks: { color: "#888" } },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,214 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");
+* {
+  font-family: "Inter", sans-serif;
+  box-sizing: border-box;
+}
+:root {
+  --bg: #0a0a0b;
+  --card: #151518;
+  --card2: #1c1c1f;
+  --text: #ffffff;
+  --muted: #888;
+  --green: #00e676;
+  --border: #222;
+}
+body[data-theme="dark"] {
+  --bg: #0a0a0b;
+  --card: #151518;
+  --card2: #1c1c1f;
+  --text: #ffffff;
+  --muted: #888;
+  --green: #00e676;
+  --border: #222;
+}
+body[data-theme="green"] {
+  --bg: #0a0a0b;
+  --card: #151518;
+  --card2: #1c1c1f;
+  --text: #ffffff;
+  --muted: #888;
+  --green: #00e676;
+  --border: #222;
+}
+body[data-theme="blue"] {
+  --bg: #0a0f1a;
+  --card: #141e2e;
+  --card2: #1a2740;
+  --text: #e0f0ff;
+  --muted: #7aa0c8;
+  --green: #3b82f6;
+  --border: #203050;
+}
+body[data-theme="purple"] {
+  --bg: #120a1a;
+  --card: #1e1430;
+  --card2: #271a40;
+  --text: #f0e0ff;
+  --muted: #9a7ab8;
+  --green: #a855f7;
+  --border: #3a2a5a;
+}
+body[data-theme="orange"] {
+  --bg: #1a100a;
+  --card: #2a1e14;
+  --card2: #3a2a1a;
+  --text: #ffe0b0;
+  --muted: #a08050;
+  --green: #ff8c00;
+  --border: #4a3a2a;
+}
+body[data-theme="light"] {
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --card2: #f0f0f2;
+  --text: #000000;
+  --muted: #888;
+  --green: #00b86a;
+  --border: #e0e0e0;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+.phone {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: background 0.3s;
+}
+.header {
+  padding: 20px 24px 0 24px;
+}
+.card-main {
+  background: linear-gradient(135deg, var(--card), var(--card2));
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 22px;
+  margin: 20px;
+  position: relative;
+}
+.balance {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  margin-top: 8px;
+  color: var(--text);
+}
+.btn-primary {
+  width: 100%;
+  padding: 18px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-green {
+  width: 100%;
+  padding: 18px;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.input-dark {
+  width: 100%;
+  padding: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 16px;
+  margin: 8px 0;
+  outline: none;
+  transition: 0.2s;
+}
+.input-dark::placeholder {
+  color: var(--muted);
+}
+.glass {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 16px;
+}
+.footer-actions {
+  margin-top: auto;
+  padding: 24px 20px 30px 20px;
+}
+
+/* FIXED ACTION CARDS FOR WALLET */
+.card-grad {
+  background: linear-gradient(135deg, var(--green) 0%, #00b86a 100%);
+  border-radius: 28px;
+  padding: 22px;
+  color: #000;
+  position: relative;
+  overflow: hidden;
+}
+.action {
+  width: 56px;
+  height: 56px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.tx {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.bill-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.bill-item p {
+  color: var(--muted);
+}
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--green);
+  cursor: pointer;
+  background: var(--card);
+}

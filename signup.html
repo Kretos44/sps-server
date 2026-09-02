@@ -1,0 +1,433 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Signup - SPS BANK</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+      emailjs.init("O_mntQ_o4JPuyDnWO");
+    </script>
+    <style>
+      body {
+        background: #000;
+        margin: 0;
+        font-family: Arial;
+      }
+     .phone {
+        max-width: 420px;
+        margin: 0 auto;
+        background: #000;
+        min-height: 100vh;
+        padding: 24px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+     .input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+        margin-top: 12px;
+        box-sizing: border-box;
+      }
+     .btn {
+        width: 100%;
+        padding: 15px;
+        border-radius: 14px;
+        border: 0;
+        font-weight: 800;
+        margin-top: 14px;
+        cursor: pointer;
+      }
+      #otpModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 99;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+     .otp-box {
+        background: #111;
+        border: 1px solid #222;
+        border-radius: 18px;
+        padding: 24px;
+        max-width: 360px;
+        width: 100%;
+        text-align: center;
+      }
+     .otp-inputs {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin: 20px 0;
+      }
+     .otp-inputs input {
+        width: 42px;
+        height: 48px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 800;
+        border-radius: 10px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <div style="text-align: center; margin-bottom: 20px">
+        <div
+          style="
+            width: 70px;
+            height: 70px;
+            background: #00e676;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 900;
+            color: #000;
+            margin: 0 auto;
+          "
+        >
+          S
+        </div>
+        <h2 style="color: #fff; margin-top: 14px">Create Account</h2>
+        <p style="color: #777; font-size: 13px">Join SPS BANK</p>
+      </div>
+      <input id="fullName" class="input" placeholder="Full Name" />
+      <input
+        id="email"
+        class="input"
+        type="email"
+        placeholder="Email address"
+      />
+      <input id="phone" class="input" placeholder="Phone number" />
+
+      <!-- REFERRAL INPUT ADDED HERE -->
+      <div style="background:#0f1a12;border:1px dashed #00e67655;border-radius:12px;padding:10px;margin-top:12px">
+        <input id="referralCode" class="input" placeholder="Referral Code (Optional) - e.g. SPSXXXX" style="margin-top:0;background:#000;border-color:#00e67644" />
+        <p style="color:#666;font-size:10px;margin:6px 0 0 2px">If someone referred you, enter code. Referrer gets <b style="color:#00e676">₦2500</b> bonus instantly!</p>
+        <p id="refStatus" style="font-size:11px;margin-top:6px;display:none"></p>
+      </div>
+
+      <!-- PIN ADDED HERE - NO OTHER CHANGE -->
+      <div style="position: relative">
+        <input id="pin" class="input" type="password" maxlength="6" placeholder="Create 6-digit PIN (for transfers)" />
+        <span onclick="document.getElementById('pin').type = document.getElementById('pin').type === 'password'? 'text' : 'password'" style="position:absolute;right:14px;top:65%;transform:translateY(-50%);cursor:pointer;color:#888">👁️</span>
+      </div>
+      <div style="position: relative">
+        <input id="pinConfirm" class="input" type="password" maxlength="6" placeholder="Confirm 6-digit PIN" />
+        <span onclick="document.getElementById('pinConfirm').type = document.getElementById('pinConfirm').type === 'password'? 'text' : 'password'" style="position:absolute;right:14px;top:65%;transform:translateY(-50%);cursor:pointer;color:#888">👁️</span>
+      </div>
+
+      <div style="position: relative">
+        <input
+          id="password"
+          class="input"
+          type="password"
+          placeholder="Password"
+        /><span
+          onclick="
+            document.getElementById('password').type =
+              document.getElementById('password').type === 'password'
+               ? 'text'
+                : 'password'
+          "
+          style="
+            position: absolute;
+            right: 14px;
+            top: 65%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+          "
+          >👁️</span
+        >
+      </div>
+      <button
+        id="signupBtn"
+        class="btn"
+        style="background: #00e676; color: #000"
+      >
+        Create Account
+      </button>
+      <button
+        onclick="location.href = 'login.html'"
+        class="btn"
+        style="background: #222; color: #fff"
+      >
+        Login
+      </button>
+      <p
+        id="msg"
+        style="
+          font-size: 12px;
+          text-align: center;
+          margin-top: 12px;
+          display: none;
+        "
+      ></p>
+    </div>
+
+    <div id="otpModal">
+      <div class="otp-box">
+        <h3 style="color: #fff">Verify OTP 🔐</h3>
+        <p id="otpInfo" style="color: #888; font-size: 12px; margin-top: 8px">
+          We sent code to your email
+        </p>
+        <div class="otp-inputs">
+          <input maxlength="1" id="o1" oninput="moveNext(this, 'o2')" />
+          <input maxlength="1" id="o2" oninput="moveNext(this, 'o3')" />
+          <input maxlength="1" id="o3" oninput="moveNext(this, 'o4')" />
+          <input maxlength="1" id="o4" oninput="moveNext(this, 'o5')" />
+          <input maxlength="1" id="o5" oninput="moveNext(this, 'o6')" />
+          <input maxlength="1" id="o6" />
+        </div>
+        <p style="color: #555; font-size: 11px">
+          Check your email inbox / spam for OTP
+        </p>
+        <button
+          onclick="verifyOtp()"
+          id="verifyBtn"
+          class="btn"
+          style="background: #00e676; color: #000"
+        >
+          Verify & Create Account
+        </button>
+        <p
+          onclick="resendOtp()"
+          style="
+            color: #00e676;
+            font-size: 12px;
+            margin-top: 12px;
+            cursor: pointer;
+          "
+        >
+          Resend OTP
+        </p>
+        <p
+          id="otpMsg"
+          style="
+            font-size: 11px;
+            color: #ff5555;
+            margin-top: 8px;
+            display: none;
+          "
+        ></p>
+      </div>
+    </div>
+
+    <script type="module">
+      import { auth, db } from "./firebase.js";
+      import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
+        doc,
+        setDoc,
+        serverTimestamp,
+        collection,
+        query,
+        where,
+        getDocs,
+        updateDoc,
+        addDoc
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      let generatedOtp = "";
+      let pendingData = {};
+      let validReferrerId = null;
+      let validReferrerData = null;
+
+      function genOtp() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+      }
+      window.moveNext = (curr, nextId) => {
+        if (curr.value.length === 1) {
+          document.getElementById(nextId)?.focus();
+        }
+      };
+
+      async function sendEmailOtp(email, name, otp) {
+        const SERVICE_ID = "service_az0vzdj";
+        const TEMPLATE_ID = "template_np364ck";
+        try {
+          await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+            to_email: email,
+            to_name: name,
+            otp: otp,
+            app_name: "SPS BANK",
+          });
+          return true;
+        } catch (e) {
+          console.log("EmailJS error", e);
+          alert("Email service not configured - Your OTP is: " + otp);
+          return true;
+        }
+      }
+
+      // LIVE CHECK REFERRAL CODE
+      document.getElementById("referralCode").addEventListener("blur", async () => {
+        const code = document.getElementById("referralCode").value.trim().toUpperCase();
+        const status = document.getElementById("refStatus");
+        if(!code){ status.style.display="none"; validReferrerId=null; validReferrerData=null; return; }
+        const q = query(collection(db,"users"), where("referralCode","==",code));
+        const snap = await getDocs(q);
+        if(snap.empty){
+          status.style.display="block"; status.style.color="#ff5555"; status.innerText="❌ Invalid referral code";
+          validReferrerId=null; validReferrerData=null;
+        } else {
+          validReferrerId = snap.docs[0].id;
+          validReferrerData = snap.docs[0].data();
+          status.style.display="block"; status.style.color="#00e676"; status.innerText="✅ Valid! Referred by "+validReferrerData.fullName+" - He will get ₦2500";
+        }
+      });
+
+      document.getElementById("signupBtn").onclick = async () => {
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const phone = document.getElementById("phone").value.trim();
+        const pass = document.getElementById("password").value.trim();
+        const pin = document.getElementById("pin").value.trim();
+        const pinConfirm = document.getElementById("pinConfirm").value.trim();
+        const referralInput = document.getElementById("referralCode").value.trim().toUpperCase();
+        const msg = document.getElementById("msg");
+        const btn = document.getElementById("signupBtn");
+
+        if (!fullName ||!email ||!phone ||!pass ||!pin ||!pinConfirm) {
+          msg.style.display = "block";
+          msg.style.color = "#ff5555";
+          msg.innerText = "Fill all fields including PIN";
+          return;
+        }
+        if (pass.length < 6) {
+          msg.style.display = "block";
+          msg.style.color = "#ff5555";
+          msg.innerText = "Password min 6 chars";
+          return;
+        }
+        if (pin.length!== 6 || isNaN(pin)) {
+          msg.style.display = "block";
+          msg.style.color = "#ff5555";
+          msg.innerText = "PIN must be 6 digits numbers only";
+          return;
+        }
+        if (pin!== pinConfirm) {
+          msg.style.display = "block";
+          msg.style.color = "#ff5555";
+          msg.innerText = "PINs don't match";
+          return;
+        }
+
+        // Final check referral if typed but not blurred
+        if(referralInput &&!validReferrerId){
+          const q = query(collection(db,"users"), where("referralCode","==",referralInput));
+          const snap = await getDocs(q);
+          if(!snap.empty){ validReferrerId = snap.docs[0].id; validReferrerData = snap.docs[0].data(); }
+        }
+
+        btn.innerText = "Sending OTP...";
+        btn.disabled = true;
+        pendingData = { fullName, email, phone, pass, pin, referralCodeInput: referralInput, referrerId: validReferrerId, referrerData: validReferrerData };
+        generatedOtp = genOtp();
+
+        await sendEmailOtp(email, fullName, generatedOtp);
+
+        document.getElementById("otpInfo").innerText = `Code sent to ${email} - Check inbox & spam`;
+        document.getElementById("otpModal").style.display = "flex";
+        document.getElementById("o1").focus();
+        btn.innerText = "Create Account";
+        btn.disabled = false;
+      };
+
+      window.resendOtp = async () => {
+        generatedOtp = genOtp();
+        await sendEmailOtp(pendingData.email, pendingData.fullName, generatedOtp);
+        alert("New OTP sent to " + pendingData.email);
+      };
+
+      window.verifyOtp = async () => {
+        const code = document.getElementById("o1").value + document.getElementById("o2").value + document.getElementById("o3").value + document.getElementById("o4").value + document.getElementById("o5").value + document.getElementById("o6").value;
+        const otpMsg = document.getElementById("otpMsg");
+        const btn = document.getElementById("verifyBtn");
+        if (code!== generatedOtp) {
+          otpMsg.style.display = "block";
+          otpMsg.innerText = "Wrong OTP - Try again";
+          return;
+        }
+
+        btn.innerText = "Creating...";
+        btn.disabled = true;
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, pendingData.email, pendingData.pass);
+          const uid = cred.user.uid;
+          const cleanPhone = pendingData.phone.replace(/\D/g,"");
+          const accountNumber = cleanPhone.startsWith("0")? cleanPhone.substring(1) : cleanPhone;
+          const myReferralCode = "SPS"+Math.random().toString(36).substring(2,7).toUpperCase();
+
+          await setDoc(doc(db, "users", uid), {
+            uid: uid,
+            fullName: pendingData.fullName,
+            email: pendingData.email,
+            phone: pendingData.phone,
+            password: pendingData.pass,
+            pin: pendingData.pin,
+            accountNumber: accountNumber,
+            balance: 5000,
+            referralCode: myReferralCode,
+            referredBy: pendingData.referralCodeInput || null,
+            referredByUid: pendingData.referrerId || null,
+            totalReferrals: 0,
+            totalEarnedFromReferral: 0,
+            createdAt: serverTimestamp(),
+          });
+
+          // IF REFERRAL CODE EXISTS - GIVE REFERRER 2500 BONUS
+          if(pendingData.referrerId && pendingData.referrerData){
+            const refId = pendingData.referrerId;
+            const refData = pendingData.referrerData;
+            await updateDoc(doc(db,"users",refId),{
+              balance: (refData.balance||0)+2500,
+              totalReferrals: (refData.totalReferrals||0)+1,
+              totalEarnedFromReferral: (refData.totalEarnedFromReferral||0)+2500
+            });
+            await addDoc(collection(db,"transactions"),{
+              fromUid:"SYSTEM",
+              toUid:refId,
+              fromName:"SPS Referral Bonus",
+              toName:refData.fullName,
+              fromEmail:"bonus@spsbank.com",
+              toEmail:refData.email,
+              toAccount:refData.accountNumber,
+              fromAccount:"REFERRAL",
+              amount:2500,
+              type:"referral_bonus",
+              remark:`Referral bonus - You referred ${pendingData.fullName}`,
+              txnId:"REF"+Math.floor(100000000+Math.random()*900000000),
+              participants:[refId],
+              createdAt:new Date()
+            });
+          }
+
+          localStorage.setItem("uid", uid);
+          localStorage.setItem("kretos_uid", uid);
+          alert("Account created! Account: "+accountNumber+" PIN: "+pendingData.pin+" - ₦5000 bonus added 🎉"+(pendingData.referrerId? " Referrer got ₦2500!" : ""));
+          location.href = "wallet.html";
+        } catch (e) {
+          otpMsg.style.display = "block";
+          otpMsg.innerText = e.message;
+          btn.innerText = "Verify & Create Account";
+          btn.disabled = false;
+        }
+      };
+    </script>
+  </body>
+</html>

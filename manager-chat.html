@@ -1,0 +1,384 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Manager Chat - SPS</title>
+    <style>
+      body {
+        background: #000;
+        color: #fff;
+        font-family: Arial;
+        margin: 0;
+      }
+      .header {
+        padding: 14px 16px;
+        background: #111;
+        border-bottom: 1px solid #222;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .user-list {
+        height: 100vh;
+        overflow: auto;
+        border-right: 1px solid #222;
+      }
+      .user-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #1a1a1a;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .user-item:hover {
+        background: #111;
+      }
+      .user-item.active {
+        background: #1a2a1a;
+        border-left: 3px solid #00e676;
+      }
+      .chat-wrap {
+        height: calc(100vh - 180px);
+        overflow: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .msg {
+        max-width: 75%;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-size: 13px;
+        word-break: break-word;
+      }
+      .me {
+        align-self: flex-end;
+        background: #00e676;
+        color: #000;
+        border-radius: 14px 14px 2px 14px;
+      }
+      .other {
+        align-self: flex-start;
+        background: #222;
+        color: #fff;
+        border: 1px solid #333;
+      }
+      .bot {
+        align-self: flex-start;
+        background: #112233;
+        border: 1px solid #00e676;
+        color: #aaffaa;
+        font-size: 12px;
+      }
+      .input-bar {
+        display: flex;
+        gap: 8px;
+        padding: 10px;
+        background: #111;
+        border-top: 1px solid #222;
+        position: sticky;
+        bottom: 0;
+      }
+      .input-bar input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+      }
+      .input-bar button {
+        padding: 12px 18px;
+        border-radius: 10px;
+        background: #00e676;
+        border: 0;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .switch {
+        width: 46px;
+        height: 26px;
+        background: #333;
+        border-radius: 13px;
+        position: relative;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .switch.on {
+        background: #00e676;
+      }
+      .knob {
+        width: 20px;
+        height: 20px;
+        background: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        transition: 0.3s;
+      }
+      .switch.on .knob {
+        left: 23px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        display: flex;
+        max-width: 900px;
+        margin: 0 auto;
+        background: #000;
+        min-height: 100vh;
+      "
+    >
+      <!-- USER LIST -->
+      <div style="width: 35%; min-width: 200px; background: #0a0a0a">
+        <div
+          class="header"
+          style="flex-direction: column; align-items: flex-start; gap: 8px"
+        >
+          <p style="font-weight: 800">Manager Inbox 👑</p>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              background: #1a1a1a;
+              padding: 8px 12px;
+              border-radius: 20px;
+              width: 100%;
+              box-sizing: border-box;
+            "
+          >
+            <span style="font-size: 12px">AI BOT 🤖</span>
+            <div id="botSwitch" class="switch on" onclick="toggleBot()">
+              <div class="knob"></div>
+            </div>
+            <span
+              id="botStatus"
+              style="font-size: 11px; color: #00e676; font-weight: 700"
+              >ON</span
+            >
+          </div>
+        </div>
+        <div id="userList" class="user-list">
+          <p style="color: #555; text-align: center; margin-top: 20px">
+            Loading users...
+          </p>
+        </div>
+      </div>
+      <!-- CHAT AREA -->
+      <div
+        style="flex: 1; display: flex; flex-direction: column; background: #000"
+      >
+        <div class="header">
+          <div>
+            <p id="chatWith" style="font-weight: 700">Select a user</p>
+            <p id="chatEmail" style="font-size: 11px; color: #888"></p>
+          </div>
+          <div
+            onclick="location.href = 'wallet.html'"
+            style="
+              width: 32px;
+              height: 32px;
+              background: #222;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            "
+          >
+            ←
+          </div>
+        </div>
+        <div id="chatWrap" class="chat-wrap">
+          <p style="color: #444; text-align: center; margin-top: 40px">
+            Select user to chat
+          </p>
+        </div>
+        <div class="input-bar">
+          <input
+            id="msgInput"
+            placeholder="Reply as Manager..."
+            onkeypress="if (event.key === 'Enter') sendManagerMsg();"
+          /><button onclick="sendManagerMsg()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        collection,
+        doc,
+        getDoc,
+        setDoc,
+        addDoc,
+        query,
+        onSnapshot,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      const MANAGER_UID = "1Xb2Nk6N5QaZ8sT3cD9eF0gH1iJ2kL3m";
+      let selectedUid = null;
+      let botEnabled = true;
+
+      // Load bot status
+      try {
+        const sSnap = await getDoc(doc(db, "settings", "ai_bot"));
+        if (sSnap.exists()) {
+          botEnabled = sSnap.data().enabled !== false;
+        }
+      } catch (e) {}
+      updateBotUI();
+
+      function updateBotUI() {
+        const sw = document.getElementById("botSwitch");
+        const st = document.getElementById("botStatus");
+        if (botEnabled) {
+          sw.classList.add("on");
+          st.innerText = "ON";
+          st.style.color = "#00e676";
+        } else {
+          sw.classList.remove("on");
+          st.innerText = "OFF";
+          st.style.color = "#888";
+        }
+      }
+
+      window.toggleBot = async () => {
+        botEnabled = !botEnabled;
+        updateBotUI();
+        try {
+          await setDoc(doc(db, "settings", "ai_bot"), {
+            enabled: botEnabled,
+            updatedAt: serverTimestamp(),
+          });
+        } catch (e) {}
+        alert(
+          "AI BOT is now " +
+            (botEnabled
+              ? "ON - Will auto-reply"
+              : "OFF - Only human manager will reply"),
+        );
+      };
+
+      // Load users who chatted
+      const q = query(collection(db, "supportChats"));
+      onSnapshot(q, (snap) => {
+        let usersMap = {};
+        snap.forEach((d) => {
+          const data = d.data();
+          if (!usersMap[data.userUid]) {
+            usersMap[data.userUid] = {
+              uid: data.userUid,
+              name: data.userName,
+              email: data.userEmail,
+              account: data.userAccount,
+              lastMsg: data.text,
+              lastTime: data.createdAt,
+            };
+          } else {
+            // keep latest
+            const cur = usersMap[data.userUid].lastTime?.toMillis
+              ? usersMap[data.userUid].lastTime.toMillis()
+              : 0;
+            const now = data.createdAt?.toMillis
+              ? data.createdAt.toMillis()
+              : 0;
+            if (now > cur) usersMap[data.userUid].lastMsg = data.text;
+          }
+        });
+        const list = document.getElementById("userList");
+        const users = Object.values(usersMap);
+        if (users.length === 0) {
+          list.innerHTML =
+            '<p style="color:#555;text-align:center;margin-top:20px">No chats yet</p>';
+          return;
+        }
+        list.innerHTML = "";
+        users.forEach((u) => {
+          const div = document.createElement("div");
+          div.className =
+            "user-item " + (selectedUid === u.uid ? "active" : "");
+          div.innerHTML = `<div><p style="font-size:13px;font-weight:700">${u.name}</p><p style="font-size:10px;color:#888">${u.account || ""} • ${u.lastMsg?.substring(0, 25) || ""}</p></div><div style="width:8px;height:8px;background:#00e676;border-radius:50%"></div>`;
+          div.onclick = () => openChat(u);
+          list.appendChild(div);
+        });
+      });
+
+      let unsub = null;
+      function openChat(u) {
+        selectedUid = u.uid;
+        document.getElementById("chatWith").innerText = u.name;
+        document.getElementById("chatEmail").innerText =
+          u.email + " • " + (u.account || "");
+        if (unsub) unsub();
+        const q2 = query(collection(db, "supportChats"));
+        unsub = onSnapshot(q2, (snap) => {
+          let msgs = [];
+          snap.forEach((d) => {
+            const dd = d.data();
+            if (dd.userUid === selectedUid) msgs.push({ id: d.id, ...dd });
+          });
+          msgs.sort((a, b) => {
+            const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+            const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            return at - bt;
+          });
+          const wrap = document.getElementById("chatWrap");
+          wrap.innerHTML = "";
+          msgs.forEach((m) => {
+            const isManager = m.isManager;
+            const isBot = m.senderUid === "AI_BOT";
+            const div = document.createElement("div");
+            div.className =
+              "msg " + (isManager && !isBot ? "me" : isBot ? "bot" : "other");
+            let t = "";
+            try {
+              t = m.createdAt?.toDate
+                ? m.createdAt.toDate().toLocaleTimeString()
+                : "";
+            } catch (e) {}
+            let label = isBot
+              ? "SPS AI 🤖"
+              : isManager
+                ? "You 👑"
+                : m.senderName;
+            div.innerHTML = `<div style="font-size:9px;color:#888;margin-bottom:2px">${label} • ${t}</div>${m.text}`;
+            wrap.appendChild(div);
+          });
+          wrap.scrollTop = wrap.scrollHeight;
+          // re-highlight active
+          document
+            .querySelectorAll(".user-item")
+            .forEach((el) => el.classList.remove("active"));
+        });
+      }
+
+      window.sendManagerMsg = async () => {
+        const input = document.getElementById("msgInput");
+        const text = input.value.trim();
+        if (!text || !selectedUid) return;
+        input.value = "";
+        const uDiv = document.getElementById("chatWith");
+        await addDoc(collection(db, "supportChats"), {
+          userUid: selectedUid,
+          userName: uDiv.innerText,
+          senderUid: MANAGER_UID,
+          senderName: "Manager Zaharadeen 👑",
+          text: text,
+          isManager: true,
+          createdAt: serverTimestamp(),
+        });
+      };
+    </script>
+  </body>
+</html>

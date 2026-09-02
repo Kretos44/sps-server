@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kretos - OTP</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: Inter, sans-serif;
+      }
+      body {
+        background: #0f172a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: #fff;
+        width: 360px;
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+      }
+      .otp-input {
+        width: 100%;
+        padding: 16px;
+        font-size: 22px;
+        letter-spacing: 10px;
+        text-align: center;
+        border: 2px solid #6c5ce7;
+        border-radius: 12px;
+        margin: 20px 0;
+      }
+      button {
+        width: 100%;
+        padding: 14px;
+        background: #6c5ce7;
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .info {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Enter OTP</h2>
+      <p class="info">
+      </p>
+      <input id="otp" class="otp-input" maxlength="6" />
+      <button id="verifyBtn">Verify & Create Wallet</button>
+      <p id="status" class="info"></p>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        RecaptchaVerifier,
+        signInWithPhoneNumber,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        setDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBQMAbwEb9j4S8NzYcn6kcnzBvY8oHCums",
+        authDomain: "kretos-wallet.firebaseapp.com",
+        projectId: "kretos-wallet",
+        storageBucket: "kretos-wallet.firebasestorage.app",
+        messagingSenderId: "879933843002",
+        appId: "1:879933843002:web:3661deecb4f27c358f7703",
+      };
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const temp = JSON.parse(localStorage.getItem("kretos_temp"));
+      document.getElementById("ph").innerText = temp.phone;
+
+      document.getElementById("verifyBtn").onclick = async () => {
+        const code = document.getElementById("otp").value;
+        if (code !== "222070") {
+          document.getElementById("status").innerText =
+            "For test number, use 222070 only";
+          return;
+        }
+        document.getElementById("status").innerText = "Creating wallet...";
+        try {
+          // For test number we create user doc directly without phone auth confirm (since confirmationResult not persisted)
+          // We simulate UID from phone
+          const uid = "test_" + temp.phone.replace(/\+/g, "");
+          await setDoc(doc(db, "users", uid), {
+            name: temp.name,
+            email: temp.email,
+            phone: temp.phone,
+            pin: temp.pin,
+            balance: 0,
+            createdAt: new Date(),
+          });
+          localStorage.setItem("kretos_uid", uid);
+          window.location.href = "wallet.html";
+        } catch (e) {
+          document.getElementById("status").innerText = e.message;
+        }
+      };
+    </script>
+  </body>
+</html>

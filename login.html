@@ -1,0 +1,256 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Login - SPS BANK</title>
+    <style>
+      body {
+        background: #000;
+        margin: 0;
+        font-family: Arial;
+      }
+      .phone {
+        max-width: 420px;
+        margin: 0 auto;
+        background: #000;
+        min-height: 100vh;
+        padding: 24px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+        margin-top: 12px;
+        box-sizing: border-box;
+      }
+      .btn {
+        width: 100%;
+        padding: 15px;
+        border-radius: 14px;
+        border: 0;
+        font-weight: 800;
+        margin-top: 14px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <div style="text-align: center; margin-bottom: 20px">
+        <div
+          style="
+            width: 70px;
+            height: 70px;
+            background: #00e676;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 900;
+            color: #000;
+            margin: 0 auto;
+          "
+        >
+          S
+        </div>
+        <h2 style="color: #fff; margin-top: 14px">Welcome Back</h2>
+        <p style="color: #777; font-size: 13px">Login to SPS BANK</p>
+      </div>
+      <input
+        id="email"
+        class="input"
+        type="email"
+        placeholder="Email address"
+      />
+      <div style="position: relative">
+        <input
+          id="password"
+          class="input"
+          type="password"
+          placeholder="Password"
+        />
+        <span
+          onclick="
+            document.getElementById('password').type =
+              document.getElementById('password').type === 'password'
+                ? 'text'
+                : 'password'
+          "
+          style="
+            position: absolute;
+            right: 14px;
+            top: 65%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+          "
+          >👁️</span
+        >
+      </div>
+      <p
+        onclick="location.href = 'forgot-password.html'"
+        style="
+          color: #00e676;
+          font-size: 13px;
+          text-align: right;
+          margin-top: 10px;
+          cursor: pointer;
+          font-weight: 600;
+        "
+      >
+        Forgot Password?
+      </p>
+      <button
+        id="loginBtn"
+        class="btn"
+        style="background: #00e676; color: #000"
+      >
+        Login
+      </button>
+      <button
+        onclick="location.href = 'signup.html'"
+        class="btn"
+        style="background: #222; color: #fff"
+      >
+        Create Account
+      </button>
+      <p
+        id="msg"
+        style="
+          font-size: 12px;
+          text-align: center;
+          margin-top: 12px;
+          display: none;
+        "
+      ></p>
+    </div>
+    <script type="module">
+      import { auth, db } from "./firebase.js";
+      import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+        doc,
+        updateDoc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      document.getElementById("loginBtn").onclick = async () => {
+        const email = document
+          .getElementById("email")
+          .value.trim()
+          .toLowerCase();
+        const pass = document.getElementById("password").value.trim();
+        const msg = document.getElementById("msg");
+        const btn = document.getElementById("loginBtn");
+        if (!email || !pass) {
+          msg.style.display = "block";
+          msg.style.color = "#ff5555";
+          msg.innerText = "Fill all";
+          return;
+        }
+        btn.innerText = "Logging...";
+        btn.disabled = true;
+        msg.style.display = "none";
+
+        try {
+          // STEP 1: Try Firestore first - handles old users without password field
+          const q = query(collection(db, "users"), where("email", "==", email));
+          const snap = await getDocs(q);
+
+          if (!snap.empty) {
+            const docSnap = snap.docs[0];
+            const data = docSnap.data();
+            const docId = docSnap.id;
+            const storedPass = (data.password || "").trim();
+
+            // If password field missing OR matches OR this is manager bypass
+            if (!storedPass) {
+              // OLD USER - No password field -> auto fix and allow login
+              try {
+                await updateDoc(doc(db, "users", docId), {
+                  password: pass,
+                  uid: docId,
+                });
+              } catch (e) {}
+              localStorage.setItem("uid", data.uid || docId);
+              localStorage.setItem("kretos_uid", data.uid || docId);
+              location.href = "wallet.html";
+              return;
+            }
+
+            if (storedPass === pass) {
+              localStorage.setItem("uid", data.uid || docId);
+              localStorage.setItem("kretos_uid", data.uid || docId);
+              location.href = "wallet.html";
+              return;
+            }
+            // If Firestore password mismatch, try Auth
+          }
+
+          // STEP 2: Try Firebase Auth
+          try {
+            const cred = await signInWithEmailAndPassword(auth, email, pass);
+            const uid = cred.user.uid;
+            // Auto-fix password field in Firestore if missing
+            try {
+              const userRef = doc(db, "users", uid);
+              const uSnap = await getDoc(userRef);
+              if (uSnap.exists()) {
+                const d = uSnap.data();
+                if (!d.password || d.password.trim() !== pass) {
+                  await updateDoc(userRef, { password: pass, uid: uid });
+                }
+              }
+            } catch (e) {}
+            localStorage.setItem("uid", uid);
+            localStorage.setItem("kretos_uid", uid);
+            location.href = "wallet.html";
+            return;
+          } catch (authErr) {
+            // Auth failed, but we already tried firestore above
+            throw new Error(
+              "Wrong password. If you forgot, click Forgot Password.",
+            );
+          }
+        } catch (e) {
+          msg.style.display = "block";
+          msg.style.color = "#ff5555";
+          msg.innerText = e.message;
+          btn.innerText = "Login";
+          btn.disabled = false;
+        }
+      };
+    </script>
+    <script>
+// REMOVE NETLIFY BADGE
+const style = document.createElement('style');
+style.innerHTML = `
+  div[style*="fixed"][style*="bottom"] { display: none !important; }
+  a[href*="netlify.com"] div { display: none !important; }
+`;
+document.head.appendChild(style);
+
+setInterval(() => {
+  document.querySelectorAll('div').forEach(el => {
+    if (el.textContent.includes('Powered by Netlify')) {
+      el.parentElement.style.display = 'none';
+      el.style.display = 'none';
+    }
+  });
+}, 500);
+</script>
+  </body>
+</html>

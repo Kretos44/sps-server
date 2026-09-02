@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Support Chat</title>
+    <style>
+      body {
+        background: #000;
+        color: #fff;
+        font-family: Arial;
+        margin: 0;
+      }
+      .header {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #111;
+        border-bottom: 1px solid #222;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      .chat-wrap {
+        height: calc(100vh - 130px);
+        overflow: auto;
+        padding: 16px 16px 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .msg {
+        max-width: 78%;
+        padding: 10px 14px;
+        border-radius: 16px;
+        font-size: 13px;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+      .me {
+        align-self: flex-end;
+        background: #00e676;
+        color: #000;
+        border-radius: 16px 16px 2px 16px;
+      }
+      .other {
+        align-self: flex-start;
+        background: #1e1e22;
+        color: #fff;
+        border-radius: 16px 16px 16px 2px;
+        border: 1px solid #333;
+      }
+      .bot {
+        align-self: flex-start;
+        background: linear-gradient(135deg, #1a2a1a, #112233);
+        border: 1px solid #00e676;
+        color: #fff;
+        border-radius: 16px 16px 16px 2px;
+      }
+      .input-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #111;
+        padding: 12px;
+        border-top: 1px solid #222;
+        display: flex;
+        gap: 8px;
+        max-width: 420px;
+        margin: 0 auto;
+        z-index: 5;
+      }
+      .input-bar input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+        outline: none;
+      }
+      .input-bar button {
+        padding: 12px 18px;
+        border-radius: 12px;
+        background: #00e676;
+        border: 0;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .time {
+        font-size: 9px;
+        opacity: 0.6;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone" style="max-width: 420px; margin: 0 auto">
+      <div class="header">
+        <div
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 36px;
+            height: 36px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          "
+        >
+          ←
+        </div>
+        <div>
+          <p style="font-weight: 700">SPS Support 👑</p>
+          <p style="font-size: 11px; color: #00e676" id="statusDot">
+            SPS AI Bot 🤖 • Online
+          </p>
+        </div>
+      </div>
+      <div id="chatWrap" class="chat-wrap"></div>
+      <div class="input-bar">
+        <input
+          id="msgInput"
+          placeholder="Type message..."
+          onkeypress="if (event.key === 'Enter') sendMsg();"
+        /><button onclick="sendMsg()">Send</button>
+      </div>
+    </div>
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        doc,
+        getDoc,
+        collection,
+        addDoc,
+        query,
+        where,
+        onSnapshot,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const uid =
+        localStorage.getItem("uid") || localStorage.getItem("kretos_uid");
+      if (!uid) location.href = "login.html";
+      let userData = null;
+      const chatWrap = document.getElementById("chatWrap");
+      const msgInput = document.getElementById("msgInput");
+
+      async function init() {
+        const snap = await getDoc(doc(db, "users", uid));
+        userData = snap.data();
+        const q = query(
+          collection(db, "supportChats"),
+          where("userUid", "==", uid),
+        );
+        onSnapshot(q, (snap) => {
+          let msgs = [];
+          snap.forEach((d) => {
+            msgs.push({ id: d.id, ...d.data() });
+          });
+          msgs.sort((a, b) => {
+            const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+            const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            return at - bt;
+          });
+          if (msgs.length === 0) {
+            chatWrap.innerHTML =
+              '<p style="color:#555;text-align:center;margin-top:30px">Hi ' +
+              userData.fullName +
+              " 👋<br>Ask me anything about SPS BANK. AI Bot is here to help!</p>";
+            return;
+          }
+          chatWrap.innerHTML = "";
+          msgs.forEach((m) => {
+            const isMe = m.senderUid === uid;
+            const isBot = m.senderUid === "AI_BOT";
+            const div = document.createElement("div");
+            div.className = "msg " + (isMe ? "me" : isBot ? "bot" : "other");
+            let t = "";
+            try {
+              t = m.createdAt?.toDate
+                ? m.createdAt.toDate().toLocaleTimeString()
+                : "";
+            } catch (e) {}
+            let senderLabel = isMe
+              ? ""
+              : `<div style="font-size:10px;color:${isBot ? "#00e676" : "#888"};margin-bottom:2px">${m.senderName}</div>`;
+            div.innerHTML = `${senderLabel}${m.text}<div class="time">${t} ${isMe ? "✓✓" : ""}</div>`;
+            chatWrap.appendChild(div);
+          });
+          chatWrap.scrollTop = chatWrap.scrollHeight;
+        });
+      }
+
+      // SMART AI BOT REPLIES
+      function getBotReply(text) {
+        text = text.toLowerCase();
+        if (
+          text.includes("hi") ||
+          text.includes("hello") ||
+          text.includes("hey")
+        )
+          return `Hello ${userData.fullName} 👋 Welcome to SPS BANK! How can I help you today? You can ask about transfer, balance, receipt, account number, etc.`;
+        if (text.includes("balance") || text.includes("wallet"))
+          return `Your wallet balance is shown on wallet page 💰 If it's not updating, pull down to refresh. Need help with funding?`;
+        if (
+          text.includes("transfer") ||
+          text.includes("send") ||
+          text.includes("not going")
+        )
+          return `For transfers: Go to Wallet > Send Money > Enter account number > Amount > Send. Make sure you have enough balance + receipt fee ₦10. If failed, check your transaction history.`;
+        if (text.includes("receipt") || text.includes("history"))
+          return `To see receipt: Wallet > Recent Transactions > Click any transaction 👆 Your receipt will show with download, share & PDF options.`;
+        if (text.includes("account") || text.includes("number"))
+          return `Your SPS account number is: ${userData.accountNumber || userData.phone} 📱 Share it to receive money. It's in your profile page too.`;
+        if (text.includes("forgot") || text.includes("password"))
+          return `Forgot password? Go to Login > Forgot Password > Enter email. Or contact Manager: zarakretos44@gmail.com`;
+        if (
+          text.includes("bill") ||
+          text.includes("airtime") ||
+          text.includes("data")
+        )
+          return `To buy Airtime/Data/Bills: Wallet > Pay Bills > Choose network > Enter phone & amount. It's instant ⚡`;
+        if (text.includes("charge") || text.includes("fee"))
+          return `SPS charges: Transfer ₦10, Bills ₦0-50 depending on provider. All shown before you confirm.`;
+        if (text.includes("manager") || text.includes("human"))
+          return `Manager Zaharadeen will join soon 👑 I've notified him. Meanwhile, I can help with most questions! What do you need?`;
+        if (text.includes("thank"))
+          return `You're welcome! 💚 Thank you for banking with SPS. Need anything else?`;
+        return `Thanks for your message! 🤖 I'm SPS AI Bot. Manager will reply soon, but I can help now:\n\n• Balance / Transfer / Receipt\n• Account Number\n• Bills & Airtime\n• Password Reset\n\nTell me what you need help with?`;
+      }
+
+      window.sendMsg = async () => {
+        const text = msgInput.value.trim();
+        if (!text) return;
+        const tempText = text;
+        msgInput.value = "";
+        msgInput.placeholder = "Sending...";
+        try {
+          await addDoc(collection(db, "supportChats"), {
+            userUid: uid,
+            userName: userData.fullName,
+            userEmail: userData.email,
+            userAccount: userData.accountNumber || userData.phone,
+            senderUid: uid,
+            senderName: userData.fullName,
+            text: tempText,
+            isManager: false,
+            createdAt: serverTimestamp(),
+          });
+          msgInput.placeholder = "Type message...";
+
+          // TRIGGER AI BOT AFTER 1.5s if manager offline
+          // CHECK IF BOT IS ENABLED
+    setTimeout(async()=>{
+      try{
+        const sSnap=await getDoc(doc(db,"settings","ai_bot"));
+        const enabled = sSnap.exists() ? sSnap.data().enabled!==false : true;
+        if(!enabled) return; // BOT OFF - don't reply
+        const botText=getBotReply(tempText);
+        await addDoc(collection(db,"supportChats"),{
+          userUid: uid, userName: userData.fullName,
+          senderUid: "AI_BOT", senderName: "SPS AI Assistant 🤖",
+          text: botText, isManager: true, isBot: true, createdAt: serverTimestamp()
+        });
+      }catch(e){}
+    }, 1500);
+        } catch (e) {
+          alert("Failed: " + e.message);
+          msgInput.value = tempText;
+        }
+      };
+
+      init();
+    </script>
+  </body>
+</html>

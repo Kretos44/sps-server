@@ -1,0 +1,608 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Send - SPS BANK</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      .input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+        margin-top: 10px;
+      }
+      .suggest {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #222;
+        border-radius: 12px;
+        z-index: 10;
+        max-height: 180px;
+        overflow: auto;
+        display: none;
+      }
+      .s-item {
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+        cursor: pointer;
+      }
+      .s-item:hover {
+        background: #333;
+      }
+      .r-btn {
+        width: 100%;
+        padding: 15px;
+        border-radius: 14px;
+        border: 0;
+        font-weight: 700;
+        margin-top: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0);
+        }
+        60% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <div style="padding: 20px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div
+            onclick="location.href = 'wallet.html'"
+            style="
+              width: 40px;
+              height: 40px;
+              background: #151518;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #fff;
+              cursor: pointer;
+            "
+          >
+            ←
+          </div>
+          <h2 style="color: #fff">Send Money</h2>
+        </div>
+        <div style="position: relative; margin-top: 20px">
+          <input
+            id="acc"
+            class="input"
+            placeholder="Account Number (10 digits)"
+            maxlength="10"
+            autocomplete="off"
+          />
+          <div id="sBox" class="suggest"></div>
+        </div>
+        <div
+          id="verified"
+          style="
+            display: none;
+            background: #0a2a15;
+            border: 1px solid #00e676;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 12px;
+          "
+        >
+          <p style="color: #00e676; font-size: 12px">✅ Verified</p>
+          <p id="vName" style="color: #fff; font-weight: bold"></p>
+          <p id="vBank" style="color: #777; font-size: 11px"></p>
+        </div>
+        <input id="amount" class="input" type="number" placeholder="Amount" />
+        <input
+          id="pin"
+          class="input"
+          type="password"
+          placeholder="Enter PIN"
+          maxlength="4"
+        />
+        <button
+          id="sendBtn"
+          style="
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 14px;
+            border: 0;
+            font-weight: 800;
+            background: #00e676;
+            font-size: 15px;
+          "
+        >
+          Send Money
+        </button>
+        <button
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 100%;
+            margin-top: 10px;
+            background: #222;
+            color: #fff;
+            padding: 13px;
+            border-radius: 12px;
+            border: 0;
+          "
+        >
+          Back to Wallet
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 1: TRANSACTION SUCCESSFUL -->
+    <div
+      id="successStep"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #0a0a0b;
+        z-index: 1000;
+        padding: 20px;
+        overflow: auto;
+      "
+    >
+      <div
+        class="phone"
+        style="
+          margin: 0 auto;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <div
+          style="
+            background: #151518;
+            border: 1px solid #222;
+            border-radius: 28px;
+            padding: 32px 24px;
+            text-align: center;
+            width: 100%;
+            animation: fadeIn 0.4s;
+          "
+        >
+          <div
+            style="
+              width: 90px;
+              height: 90px;
+              background: #00e676;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 44px;
+              margin: 0 auto 20px auto;
+              animation: pop 0.5s;
+            "
+          >
+            ✓
+          </div>
+          <h2 style="color: #fff; font-size: 22px">Transaction Successful</h2>
+          <p
+            id="successAmt"
+            style="
+              color: #00e676;
+              font-size: 36px;
+              font-weight: 900;
+              margin: 14px 0;
+            "
+          >
+            ₦0
+          </p>
+          <p id="successName" style="color: #aaa; font-size: 14px"></p>
+          <p style="color: #666; font-size: 12px; margin-top: 8px">
+            Your money has been sent successfully
+          </p>
+          <div
+            style="
+              background: #0a0a0b;
+              border-radius: 16px;
+              padding: 14px;
+              margin-top: 22px;
+              text-align: left;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+              "
+            >
+              <span style="color: #777; font-size: 12px">Transaction ID</span
+              ><span
+                id="sTxn"
+                style="color: #fff; font-size: 12px; font-weight: 600"
+                >000000000000</span
+              >
+            </div>
+            <div style="display: flex; justify-content: space-between">
+              <span style="color: #777; font-size: 12px">Date</span
+              ><span id="sDate" style="color: #fff; font-size: 12px">Now</span>
+            </div>
+          </div>
+          <button
+            onclick="showReceiptAfterSuccess()"
+            style="
+              width: 100%;
+              margin-top: 22px;
+              padding: 16px;
+              background: #fff;
+              color: #000;
+              border: 0;
+              border-radius: 14px;
+              font-weight: 800;
+            "
+          >
+            View Receipt →
+          </button>
+          <button
+            onclick="location.href = 'wallet.html'"
+            style="
+              width: 100%;
+              margin-top: 10px;
+              background: #222;
+              color: #fff;
+              padding: 14px;
+              border-radius: 14px;
+              border: 0;
+            "
+          >
+            Back to Wallet
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: RECEIPT -->
+    <div
+      id="receipt"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #0a0a0b;
+        z-index: 999;
+        padding: 20px;
+        overflow: auto;
+      "
+    >
+      <div class="phone" style="margin: 0 auto">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0 20px 0;
+          "
+        >
+          <div
+            onclick="goBack()"
+            style="
+              width: 40px;
+              height: 40px;
+              background: #151518;
+              border: 1px solid #222;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              color: #fff;
+            "
+          >
+            ←
+          </div>
+          <h3 style="color: #fff">Transaction Receipt</h3>
+        </div>
+        <div
+          id="receiptCard"
+          style="
+            background: #151518;
+            border: 1px solid #222;
+            border-radius: 28px;
+            padding: 24px;
+            text-align: center;
+          "
+        >
+          <div
+            style="
+              width: 70px;
+              height: 70px;
+              background: #00e676;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 16px auto;
+              font-size: 32px;
+            "
+          >
+            ✓
+          </div>
+          <h2 style="color: #fff">Transfer Successful</h2>
+          <p
+            id="rAmount"
+            style="
+              font-size: 32px;
+              font-weight: 800;
+              color: #00e676;
+              margin: 12px 0;
+            "
+          >
+            ₦0
+          </p>
+          <p id="rName" style="color: #888"></p>
+          <div
+            style="
+              text-align: left;
+              margin-top: 24px;
+              background: #0a0a0b;
+              border-radius: 16px;
+              padding: 16px;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 12px;
+              "
+            >
+              <span style="color: #888; font-size: 13px">Transaction ID</span
+              ><span
+                id="rTxn"
+                style="color: #fff; font-size: 13px; font-weight: 600"
+                >000000000000</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 12px;
+              "
+            >
+              <span style="color: #888; font-size: 13px">Account Number</span
+              ><span id="rAcc" style="color: #fff; font-size: 13px"
+                >123***</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 12px;
+              "
+            >
+              <span style="color: #888; font-size: 13px">Date & Time</span
+              ><span id="rDate" style="color: #fff; font-size: 13px">Now</span>
+            </div>
+            <div style="display: flex; justify-content: space-between">
+              <span style="color: #888; font-size: 13px">Status</span
+              ><span style="color: #00e676; font-size: 13px; font-weight: 700"
+                >SUCCESS</span
+              >
+            </div>
+          </div>
+          <p style="color: #555; font-size: 10px; margin-top: 20px">
+            SPS BANK • www.spsbank.ng • System generated receipt
+          </p>
+        </div>
+        <button
+          onclick="downloadPDF()"
+          class="r-btn"
+          style="background: #fff; color: #000"
+        >
+          📄 Save as PDF
+        </button>
+        <button
+          onclick="downloadImage()"
+          class="r-btn"
+          style="background: #1a1a1a; border: 1px solid #333; color: #fff"
+        >
+          🖼️ Save as Image
+        </button>
+        <button
+          onclick="goBack()"
+          class="r-btn"
+          style="background: #00e676; color: #000; margin-top: 16px"
+        >
+          ← Back to Wallet
+        </button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db, auth } from "./firebase.js";
+      import {
+        collection,
+        getDocs,
+        addDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+      let uid = null,
+        historyList = [];
+      const acc = document.getElementById("acc"),
+        sBox = document.getElementById("sBox"),
+        vBox = document.getElementById("verified"),
+        vName = document.getElementById("vName");
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) location.href = "login.html";
+        uid = user.uid;
+        const qs = await getDocs(collection(db, "users", uid, "transactions"));
+        historyList = [];
+        qs.forEach((d) => {
+          const x = d.data();
+          if (x.account)
+            historyList.push({
+              account: x.account,
+              name: x.toName || "User",
+              bank: "SPS BANK",
+            });
+        });
+        historyList = [
+          ...new Map(historyList.map((m) => [m.account, m])).values(),
+        ];
+      });
+
+      acc.addEventListener("input", () => {
+        const val = acc.value.trim();
+        sBox.innerHTML = "";
+        vBox.style.display = "none";
+        if (val.length < 2) {
+          sBox.style.display = "none";
+          return;
+        }
+        const filtered = historyList.filter((h) => h.account.includes(val));
+        if (filtered.length == 0) {
+          sBox.style.display = "none";
+          return;
+        }
+        filtered.forEach((h) => {
+          const div = document.createElement("div");
+          div.className = "s-item";
+          div.innerHTML = `<div><p style="color:#fff;font-size:13px">${h.account}</p><p style="color:#777;font-size:11px">${h.name}</p></div><p style="color:#00e676">↗</p>`;
+          div.onclick = () => {
+            acc.value = h.account;
+            vName.innerText = h.name;
+            document.getElementById("vBank").innerText = h.bank;
+            vBox.style.display = "block";
+            sBox.style.display = "none";
+          };
+          sBox.appendChild(div);
+        });
+        sBox.style.display = "block";
+      });
+
+      function generateTxnId() {
+        return Math.floor(
+          100000000000 + Math.random() * 900000000000,
+        ).toString();
+      }
+
+      window.goBack = () => {
+        document.getElementById("receipt").style.display = "none";
+        document.getElementById("successStep").style.display = "none";
+        location.href = "wallet.html";
+      };
+
+      window.showReceiptAfterSuccess = () => {
+        document.getElementById("successStep").style.display = "none";
+        document.getElementById("rAmount").innerText =
+          window.pendingReceipt.amountTxt;
+        document.getElementById("rName").innerText = window.pendingReceipt.name;
+        document.getElementById("rAcc").innerText = window.pendingReceipt.acct;
+        document.getElementById("rTxn").innerText = window.pendingReceipt.txn;
+        document.getElementById("rDate").innerText = window.pendingReceipt.date;
+        document.getElementById("receipt").style.display = "block";
+      };
+
+      window.downloadImage = async () => {
+        const card = document.getElementById("receiptCard");
+        const canvas = await html2canvas(card, {
+          backgroundColor: "#151518",
+          scale: 2,
+        });
+        const link = document.createElement("a");
+        link.download = `SPSBANK-${document.getElementById("rTxn").innerText}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      };
+      window.downloadPDF = async () => {
+        const { jsPDF } = window.jspdf;
+        const card = document.getElementById("receiptCard");
+        const canvas = await html2canvas(card, {
+          backgroundColor: "#151518",
+          scale: 2,
+        });
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgW = 190;
+        const imgH = (canvas.height * imgW) / canvas.width;
+        pdf.addImage(imgData, "PNG", 10, 10, imgW, imgH);
+        pdf.save(`SPSBANK-${document.getElementById("rTxn").innerText}.pdf`);
+      };
+
+      document.getElementById("sendBtn").onclick = async () => {
+        if (acc.value.length != 10) {
+          alert("Enter valid 10-digit account");
+          return;
+        }
+        if (!document.getElementById("amount").value) {
+          alert("Enter amount");
+          return;
+        }
+        const txnId = generateTxnId();
+        const amountVal = parseInt(document.getElementById("amount").value);
+        const dateNow = new Date().toLocaleString();
+        try {
+          await addDoc(collection(db, "users", uid, "transactions"), {
+            account: acc.value,
+            toName: vName.innerText || "User",
+            bank: "SPS BANK",
+            amount: amountVal,
+            txnId: txnId,
+            date: new Date(),
+            type: "debit",
+          });
+
+          // STEP 1: Show SUCCESS first
+          window.pendingReceipt = {
+            amountTxt: "₦" + amountVal.toLocaleString(),
+            name: vName.innerText || acc.value,
+            acct: acc.value,
+            txn: txnId,
+            date: dateNow,
+          };
+          document.getElementById("successAmt").innerText =
+            "₦" + amountVal.toLocaleString();
+          document.getElementById("successName").innerText =
+            "To " + (vName.innerText || acc.value);
+          document.getElementById("sTxn").innerText = txnId;
+          document.getElementById("sDate").innerText = dateNow;
+          document.getElementById("successStep").style.display = "block";
+        } catch (e) {
+          alert(e.message);
+        }
+      };
+    </script>
+  </body>
+</html>

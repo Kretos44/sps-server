@@ -1,0 +1,241 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>KRETOS Face ID</title>
+    <script src="face-api.min.js"></script>
+    <style>
+      .scan {
+        width: 260px;
+        height: 340px;
+        border: 3px solid #00e676;
+        border-radius: 30px;
+        margin: 20px auto;
+        overflow: hidden;
+        background: #000;
+        position: relative;
+      }
+      #video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+      .line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #00e676;
+        animation: scan 2s infinite;
+      }
+      @keyframes scan {
+        0% {
+          top: 0;
+        }
+        100% {
+          top: 100%;
+        }
+      }
+      .bar {
+        height: 6px;
+        background: #222;
+        border-radius: 10px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        width: 0%;
+        background: #00e676;
+        transition: width 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <script>document.body.setAttribute('data-theme', localStorage.getItem('kretos_theme')||'dark');</script>
+    <div class="phone">
+      <div style="padding: 20px">
+        <h2 style="color: #fff">Setup Face ID</h2>
+        <p style="color: #777; font-size: 12px">
+          Look straight - Keep face in circle
+        </p>
+        <div class="scan">
+          <video id="video" autoplay muted playsinline></video>
+          <div class="line"></div>
+        </div>
+        <div class="bar"><div id="fill" class="fill"></div></div>
+        <p
+          id="status"
+          style="
+            text-align: center;
+            color: #00e676;
+            font-size: 12px;
+            margin-top: 8px;
+          "
+        >
+          Starting camera...
+        </p>
+        <p id="pct" style="text-align: center; color: #666; font-size: 11px">
+          0%
+        </p>
+        <button
+          id="captureBtn"
+          class="btn-green"
+          style="width: 100%; margin-top: 15px"
+        >
+          Capture My Face
+        </button>
+        <button
+          onclick="location.href = 'wallet.html'"
+          style="
+            width: 100%;
+            margin-top: 8px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #222;
+            color: #fff;
+            border: 0;
+          "
+        >
+          Skip for now
+        </button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db } from "./firebase.js";
+      import {
+        doc,
+        getDoc,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      const uid = localStorage.getItem("uid");
+      const video = document.getElementById("video");
+      const status = document.getElementById("status");
+      const fill = document.getElementById("fill");
+      const pct = document.getElementById("pct");
+      const btn = document.getElementById("captureBtn");
+
+      let faceDescriptor = null;
+      let mode = "enroll";
+      let checking = false;
+
+      const MODEL_URL =
+        "https://justadudewhohacks.github.io/face-api.js/models";
+
+      // 1. START CAMERA FIRST - THIS FIXES BLACK SCREEN
+      async function startCamera() {
+        status.innerText = "Requesting camera permission...";
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user", width: 640, height: 480 },
+          });
+          video.srcObject = stream;
+          await new Promise((r) => (video.onloadedmetadata = r));
+          await video.play();
+          status.innerText = "Camera ON ✅ Loading AI...";
+          // now load AI
+          await loadModels();
+          checkMode();
+          detectLoop();
+        } catch (err) {
+          status.innerText = "❌ Camera blocked";
+          pct.innerText = err.name + ": " + err.message;
+          alert(
+            "CAMERA BLOCKED:\n\n1. You MUST use Live Server: Click Go Live at bottom in VS Code\n2. Don't double-click file, use http://127.0.0.1:5500/face.html\n3. Click 🔒 icon in address bar → Allow Camera → Refresh\n\nError: " +
+              err.message,
+          );
+        }
+      }
+
+      async function loadModels() {
+        try {
+          status.innerText = "Loading Face AI (5 sec)...";
+          await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+          ]);
+          status.innerText = "AI Ready ✅ Show your face";
+        } catch (e) {
+          status.innerText =
+            "AI failed to load, but camera works - try capture";
+          console.error(e);
+        }
+      }
+
+      async function checkMode() {
+        if (!uid) return;
+        const snap = await getDoc(doc(db, "users", uid));
+        if (snap.exists() && snap.data().faceDescriptor) {
+          mode = "verify";
+          document.querySelector("h2").innerText = "Face Login";
+          btn.innerText = "Verify My Face";
+          status.innerText = "Registered face found - verify";
+        }
+      }
+
+      async function detectLoop() {
+        if (checking) return;
+        checking = true;
+        setInterval(async () => {
+          try {
+            const det = await faceapi
+              .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+              .withFaceLandmarks()
+              .withFaceDescriptor();
+            if (det) {
+              faceDescriptor = det.descriptor;
+              const pctVal = Math.min(
+                100,
+                Math.floor(det.detection.score * 100),
+              );
+              fill.style.width = pctVal + "%";
+              pct.innerText = pctVal + "% - Face detected";
+              status.innerText = "✅ Face locked - Click Capture";
+            } else {
+              fill.style.width = "10%";
+              pct.innerText = "Looking for face...";
+            }
+          } catch (e) {}
+        }, 400);
+      }
+
+      btn.onclick = async () => {
+        if (!faceDescriptor) {
+          alert("Face not detected yet - bring face closer with good light");
+          return;
+        }
+        if (mode === "enroll") {
+          await updateDoc(doc(db, "users", uid), {
+            faceDescriptor: Array.from(faceDescriptor),
+            faceRegistered: true,
+            faceEnrolledAt: new Date(),
+          });
+          status.innerText = "✅ Face Saved!";
+          fill.style.width = "100%";
+          pct.innerText = "100%";
+          setTimeout(() => (location.href = "wallet.html"), 1000);
+        } else {
+          const snap = await getDoc(doc(db, "users", uid));
+          const saved = snap.data().faceDescriptor;
+          const dist = faceapi.euclideanDistance(faceDescriptor, saved);
+          if (dist < 0.6) {
+            status.innerText = "✅ Matched! " + dist.toFixed(2);
+            setTimeout(() => (location.href = "wallet.html"), 800);
+          } else {
+            status.innerText = "❌ Not match " + dist.toFixed(2);
+            alert("Not your face");
+          }
+        }
+      };
+
+      startCamera();
+    </script>
+  </body>
+</html>

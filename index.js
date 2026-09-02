@@ -1,5 +1,19 @@
 const express = require("express");
 const admin = require("firebase-admin");
+if (!admin.apps.length) {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // If you have full JSON in env var
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  } else {
+    // Use Project ID from env
+    admin.initializeApp({
+      projectId: process.env.FIREBASE_PROJECT_ID || "kretos-wallet"
+    });
+  }
+}
 const cors = require("cors");
 
 const app = express();
